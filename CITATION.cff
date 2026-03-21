@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+message: "If you use climagrid in your research or engineering work, please cite it as below."
+type: software
+title: climagrid
+abstract: >
+  Open-source Python toolkit that converts public NOAA, NASA, USDA, and U.S. Forest Service environmental data into standardized predictive-maintenance input features for electric utility grid resilience systems. Designed for rural electric cooperatives and municipal utilities serving approximately 42 million Americans.
+authors:
+  - family-names: Adesiji
+    given-names: Temidire
+    email: temidireadesiji@gmail.com
+repository-code: "https://github.com/TemidireAdesiji/climagrid"
+url: "https://climagrid.readthedocs.io"
+license: Apache-2.0
+version: "0.1.0"
+date-released: "2026-05-16"
+keywords:
+  - NOAA
+  - NASA
+  - USDA
+  - electric utility
+  - predictive maintenance
+  - grid resilience
+  - rural cooperative
+  - climate
+  - weather
+  - environmental data
+references:
+  - type: standard
+    title: "IEEE Standard for Calculating the Current-Temperature Relationship of Bare Overhead Conductors"
+    authors:
+      - name: "IEEE"
+    number: "738-2012"
+    year: 2012
+  - type: standard
+    title: "IEEE Guide for Loading Mineral-Oil-Immersed Transformers"
+    authors:
+      - name: "IEEE"
+    number: "C57.91-2011"
+    year: 2011
