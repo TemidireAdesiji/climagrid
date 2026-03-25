@@ -1,0 +1,122 @@
+name: Regenerate README media
+
+# Runs on every published release (tag) OR manually from the Actions tab.
+# Generates:
+#   docs/assets/demo.gif       — animated terminal demo
+#   docs/assets/quickstart_map.png — notebook map screenshot
+# and commits both back to the default branch.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────
+  # Job 1: animated demo gif
+  # ─────────────────────────────────────────────────────────────────────────
+  demo-gif:
+    name: Generate demo gif
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main        # always update main, not the tag
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install climagrid and demo dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Generate asciinema cast file
+        run: python docs/make_cast.py
+
+      - name: Install agg (asciinema gif renderer)
+        run: |
+          curl -sL https://github.com/asciinema/agg/releases/latest/download/agg-x86_64-unknown-linux-musl \
+               -o /usr/local/bin/agg
+          chmod +x /usr/local/bin/agg
+          agg --version
+
+      - name: Render cast to gif
+        run: |
+          agg docs/assets/demo.cast docs/assets/demo.gif \
+              --font-size 14 \
+              --speed 1.5 \
+              --theme monokai
+
+      - name: Upload gif as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-gif
+          path: docs/assets/demo.gif
+          retention-days: 7
+
+      - name: Commit gif to main
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/assets/demo.cast docs/assets/demo.gif
+          git diff --cached --quiet && echo "No changes." || \
+            git commit -m "chore: regenerate demo gif [skip ci]" && git push
+
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Job 2: notebook screenshot
+  # ─────────────────────────────────────────────────────────────────────────
+  notebook-screenshot:
+    name: Generate quickstart map screenshot
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install climagrid and notebook dependencies
+        run: pip install -e ".[dev]" matplotlib
+
+      - name: Execute notebook headlessly
+        run: |
+          jupyter nbconvert \
+            --to notebook \
+            --execute \
+            --ExecutePreprocessor.timeout=300 \
+            --output /tmp/quickstart_executed.ipynb \
+            examples/quickstart.ipynb
+        env:
+          # Notebook saves map PNG to docs/assets/ via relative path
+          # No credentials needed — uses NASA POWER (public)
+          PYTHONPATH: src
+
+      - name: Verify PNG was generated
+        run: |
+          ls -lh docs/assets/quickstart_map.png
+          file docs/assets/quickstart_map.png
+
+      - name: Upload screenshot as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: quickstart-map
+          path: docs/assets/quickstart_map.png
+          retention-days: 7
+
+      - name: Commit screenshot to main
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/assets/quickstart_map.png
+          git diff --cached --quiet && echo "No changes." || \
+            git commit -m "chore: regenerate quickstart map screenshot [skip ci]" && git push
