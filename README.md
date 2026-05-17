@@ -11,11 +11,11 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0" /></a>
-  <a href="https://pypi.org/project/climagrid/?cacheSeconds=1"><img src="https://img.shields.io/pypi/v/climagrid?logo=pypi&logoColor=white" alt="PyPI" /></a>
+  <a href="https://pypi.org/project/climagrid/"><img src="https://img.shields.io/pypi/v/climagrid?logo=pypi&logoColor=white&cacheSeconds=1" alt="PyPI" /></a>
   <a href="https://github.com/TemidireAdesiji/climagrid/actions/workflows/ci.yml"><img src="https://github.com/TemidireAdesiji/climagrid/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://climagrid.readthedocs.io/en/latest/"><img src="https://readthedocs.org/projects/climagrid/badge/?version=latest" alt="Docs" /></a>
   <img src="https://img.shields.io/badge/python-3.10+-3776ab?logo=python&logoColor=white" alt="Python 3.10+" />
-  <a href="https://doi.org/10.5281/zenodo.20256536"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.20256536.svg" alt="DOI" /></a>
+  <a href="https://doi.org/10.5281/zenodo.20256536"><img src="https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20256536-blue.svg" alt="DOI" /></a>
 </p>
 
 ---
