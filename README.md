@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0" /></a>
-  <a href="https://pypi.org/project/climagrid/"><img src="https://img.shields.io/pypi/v/climagrid?logo=pypi&logoColor=white" alt="PyPI" /></a>
+  <a href="https://pypi.org/project/climagrid/"><img src="https://img.shields.io/pypi/v/climagrid?logo=pypi&logoColor=white&cacheSeconds=1" alt="PyPI" /></a>
   <a href="https://github.com/TemidireAdesiji/climagrid/actions/workflows/ci.yml"><img src="https://github.com/TemidireAdesiji/climagrid/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://climagrid.readthedocs.io/en/latest/"><img src="https://readthedocs.org/projects/climagrid/badge/?version=latest" alt="Docs" /></a>
   <img src="https://img.shields.io/badge/python-3.10+-3776ab?logo=python&logoColor=white" alt="Python 3.10+" />
