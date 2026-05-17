@@ -16,6 +16,7 @@
   <a href="https://climagrid.readthedocs.io/en/latest/"><img src="https://readthedocs.org/projects/climagrid/badge/?version=latest" alt="Docs" /></a>
   <img src="https://img.shields.io/badge/python-3.10+-3776ab?logo=python&logoColor=white" alt="Python 3.10+" />
   <a href="https://doi.org/10.5281/zenodo.20256536"><img src="https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20256536-blue.svg" alt="DOI" /></a>
+  <a href="https://codecov.io/github/TemidireAdesiji/climagrid"><img src="https://codecov.io/github/TemidireAdesiji/climagrid/graph/badge.svg?token=ACX1C8SW1Q" alt="Coverage" /></a>
 </p>
 
 ---
