@@ -5,8 +5,13 @@
 <h1 align="center">climagrid</h1>
 
 <p align="center">
-  Free, open-source environmental stress features for electric utility predictive maintenance —<br/>
-  turning public NOAA, NASA, USDA, and USFS data into ML-ready inputs for the tools utilities already run.
+  <strong>Until now, predicting weather-driven grid failures required six-figure software contracts.</strong><br>
+  climagrid is an open-source toolkit that does it for free, using NOAA, NASA, USDA, and USFS data.
+</p>
+
+<p align="center">
+  Cuts equipment costs by 25 to 30 percent &nbsp;·&nbsp; Returns roughly $10 for every $1 spent (U.S. Department of Energy)<br>
+  Built for the more than 900 rural cooperatives serving 42 million Americans across 56 percent of U.S. landmass.
 </p>
 
 <p align="center">
