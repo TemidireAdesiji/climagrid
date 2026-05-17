@@ -6,11 +6,10 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Union
 
 import pandas as pd
 
-from climagrid.schema import COLUMN_MAP, ColumnSpec
+from climagrid.schema import COLUMN_MAP
 
 
 def to_dataframe(df: pd.DataFrame) -> pd.DataFrame:
@@ -25,14 +24,14 @@ def to_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     if errors:
         import warnings
         warnings.warn(
-            f"Schema validation warnings:\n" + "\n".join(f"  - {e}" for e in errors),
+            "Schema validation warnings:\n" + "\n".join(f"  - {e}" for e in errors),
             UserWarning,
             stacklevel=2,
         )
     return df
 
 
-def to_csv(df: pd.DataFrame, path: Union[str, Path], **kwargs) -> Path:
+def to_csv(df: pd.DataFrame, path: str | Path, **kwargs) -> Path:
     """
     Write the DataFrame to a CSV file.
 
@@ -57,7 +56,7 @@ def to_csv(df: pd.DataFrame, path: Union[str, Path], **kwargs) -> Path:
     return path.resolve()
 
 
-def to_parquet(df: pd.DataFrame, path: Union[str, Path], **kwargs) -> Path:
+def to_parquet(df: pd.DataFrame, path: str | Path, **kwargs) -> Path:
     """
     Write the DataFrame to a Parquet file (column-oriented, compressed).
 
@@ -85,7 +84,7 @@ def to_parquet(df: pd.DataFrame, path: Union[str, Path], **kwargs) -> Path:
     return path.resolve()
 
 
-def to_long_parquet(df: pd.DataFrame, path: Union[str, Path], **kwargs) -> Path:
+def to_long_parquet(df: pd.DataFrame, path: str | Path, **kwargs) -> Path:
     """
     Write the DataFrame to long-form Parquet: one row per (asset_id, timestamp, feature_name).
 
@@ -107,7 +106,6 @@ def to_long_parquet(df: pd.DataFrame, path: Union[str, Path], **kwargs) -> Path:
         Absolute path of the written file.
     """
     id_cols = [c for c in ["asset_id", "timestamp", "lat", "lon"] if c in df.columns]
-    value_cols = [c for c in df.columns if c not in id_cols]
     long = df.melt(id_vars=id_cols, var_name="feature_name", value_name="feature_value")
 
     path = Path(path)
@@ -118,7 +116,7 @@ def to_long_parquet(df: pd.DataFrame, path: Union[str, Path], **kwargs) -> Path:
     return path.resolve()
 
 
-def to_json_schema(path: Union[str, Path, None] = None) -> dict:
+def to_json_schema(path: str | Path | None = None) -> dict:
     """
     Return (and optionally write) the climagrid column schema as JSON.
 

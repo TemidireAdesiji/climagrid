@@ -74,7 +74,6 @@ class IceLoadingRisk:
             return df
 
         # Temperature factor: peaks at 0°C, zero outside [min, max]
-        temp_range = self._temp_ice_max_c - self._temp_ice_min_c
         temp_factor = np.where(
             (temp >= self._temp_ice_min_c) & (temp <= self._temp_ice_max_c),
             1.0 - np.abs(temp) / max(abs(self._temp_ice_min_c), abs(self._temp_ice_max_c)),
@@ -93,10 +92,7 @@ class IceLoadingRisk:
             precip_factor = np.where(temp_factor > 0, 0.5, 0.0)
 
         # Wind factor: normalized 0–1, capped at 20 m/s
-        if wind is not None:
-            wind_factor = np.clip(wind / 20.0, 0.0, 1.0)
-        else:
-            wind_factor = 0.5  # assume moderate wind if unknown
+        wind_factor = np.clip(wind / 20.0, 0.0, 1.0) if wind is not None else 0.5
 
         # Combined risk: geometric mean of factors (requires ALL conditions)
         risk = (temp_factor * precip_factor * wind_factor) ** (1.0 / 3.0)

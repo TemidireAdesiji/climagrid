@@ -15,7 +15,7 @@ __all__ = [
 
 # HrrrAdapter requires optional herbie-data dependency
 try:
-    from climagrid.sources.noaa_hrrr import HrrrAdapter
+    from climagrid.sources.noaa_hrrr import HrrrAdapter  # noqa: F401
     __all__.append("HrrrAdapter")
 except ImportError:
     pass

@@ -93,7 +93,7 @@ def fetch(
 ) -> None:
     """Fetch environmental data and compute stress features for utility assets."""
     import climagrid
-    from climagrid.outputs import to_parquet, to_csv, to_long_parquet
+    from climagrid.outputs import to_csv, to_long_parquet, to_parquet
 
     try:
         start_dt = datetime.fromisoformat(start).replace(tzinfo=timezone.utc)

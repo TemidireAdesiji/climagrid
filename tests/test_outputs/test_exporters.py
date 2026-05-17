@@ -3,13 +3,18 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import pandas as pd
 import pytest
 
-from climagrid.outputs.exporters import to_csv, to_parquet, to_json_schema, to_dataframe, to_long_parquet
-from climagrid.schema import INDEX_COLUMNS, FEATURE_COLUMNS
+from climagrid.outputs.exporters import (
+    to_csv,
+    to_dataframe,
+    to_json_schema,
+    to_long_parquet,
+    to_parquet,
+)
+from climagrid.schema import FEATURE_COLUMNS, INDEX_COLUMNS
 
 
 @pytest.fixture

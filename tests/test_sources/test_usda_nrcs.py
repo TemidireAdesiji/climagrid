@@ -7,9 +7,8 @@ from datetime import datetime, timezone
 import pytest
 import responses as resp_mock
 
-from climagrid.sources.usda_nrcs import NrcsAdapter, _BASE_URL
 from climagrid.sources.base import BoundingBox
-
+from climagrid.sources.usda_nrcs import _BASE_URL, NrcsAdapter
 
 _MOCK_STATIONS = [
     {

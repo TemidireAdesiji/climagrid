@@ -7,12 +7,10 @@ station) in the environmental DataFrame and extracts its time series.
 
 from __future__ import annotations
 
-from typing import Optional
 import warnings
 
 import numpy as np
 import pandas as pd
-import geopandas as gpd
 from scipy.spatial import cKDTree
 
 from climagrid.assets.registry import AssetRegistry
@@ -158,8 +156,10 @@ class AssetEnvironmentJoiner:
         time_col: str = "timestamp",
     ) -> pd.DataFrame:
         """Convenience method: join env data for a single lat/lon point."""
+        import os
+        import tempfile
+
         from climagrid.assets.registry import AssetRegistry
-        import tempfile, os
 
         tmp_data = pd.DataFrame([{
             "asset_id": "point",

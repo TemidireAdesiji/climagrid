@@ -1,16 +1,15 @@
 """Tests for the climagrid schema module."""
 
 import pandas as pd
-import pytest
 
 from climagrid.schema import (
     ALL_COLUMNS,
     COLUMN_MAP,
-    INDEX_COLUMNS,
     FEATURE_COLUMNS,
-    validate_dataframe,
+    INDEX_COLUMNS,
     empty_dataframe,
     schema_summary,
+    validate_dataframe,
 )
 
 

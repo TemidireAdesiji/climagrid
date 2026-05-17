@@ -14,7 +14,6 @@ either direction within a rolling time window.
 from __future__ import annotations
 
 import pandas as pd
-import numpy as np
 
 
 class FreezeThawtCycleCounter:

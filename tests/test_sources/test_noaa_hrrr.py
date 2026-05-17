@@ -12,7 +12,6 @@ import xarray as xr
 
 from climagrid.sources.base import BoundingBox
 
-
 _BBOX  = BoundingBox(min_lat=31.3, max_lat=31.9, min_lon=-97.4, max_lon=-96.9)
 _START = datetime(2024, 7, 15, 0,  tzinfo=timezone.utc)
 _END   = datetime(2024, 7, 15, 3,  tzinfo=timezone.utc)
@@ -151,8 +150,9 @@ def test_fetch_returns_dataframe_with_temperature(mock_herbie_cls):
 @patch("climagrid.sources.noaa_hrrr._HERBIE_AVAILABLE", True)
 @patch("climagrid.sources.noaa_hrrr.Herbie", create=True)
 def test_fetch_warns_and_continues_on_hour_failure(mock_herbie_cls):
-    from climagrid.sources.noaa_hrrr import HrrrAdapter
     import warnings
+
+    from climagrid.sources.noaa_hrrr import HrrrAdapter
 
     ds = _make_test_dataset("TMP", value=295.0)
     ok_instance = MagicMock()

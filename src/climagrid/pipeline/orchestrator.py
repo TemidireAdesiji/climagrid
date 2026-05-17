@@ -11,14 +11,12 @@ import importlib
 import warnings
 from datetime import datetime
 from pathlib import Path
-from typing import Union
 
 import pandas as pd
 
-from climagrid.sources.base import BoundingBox
-from climagrid.assets.registry import AssetRegistry
 from climagrid.assets.joiner import AssetEnvironmentJoiner
-
+from climagrid.assets.registry import AssetRegistry
+from climagrid.sources.base import BoundingBox
 
 _SOURCE_MAP = {
     "nasa_power": ("climagrid.sources.nasa_power", "NasaPowerAdapter"),
@@ -39,7 +37,7 @@ _FEATURE_MAP = {
 
 
 def run(
-    assets: Union[AssetRegistry, str, Path],
+    assets: AssetRegistry | str | Path,
     start_dt: datetime,
     end_dt: datetime,
     *,

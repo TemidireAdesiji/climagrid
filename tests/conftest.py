@@ -11,7 +11,6 @@ import pytest
 
 from climagrid.sources.base import BoundingBox
 
-
 # ---------------------------------------------------------------------------
 # Common time range fixtures
 # ---------------------------------------------------------------------------

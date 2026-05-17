@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-import numpy as np
 import pandas as pd
 import pytest
 
-from climagrid.features.thermal import ThermalStressIndex, _T_REF_K, _EA_OVER_K
+from climagrid.features.thermal import _T_REF_K, ThermalStressIndex
 
 
 class TestThermalStressIndex:
@@ -22,7 +21,6 @@ class TestThermalStressIndex:
 
     def test_aging_factor_at_reference_temperature_is_one(self):
         """At the exact reference hotspot temperature (T_REF_K), FAA must equal 1.0."""
-        import math
         # T_REF_K = 383.0 K → 109.85°C ambient with hotspot_rise=0
         ref_temp_c = _T_REF_K - 273.15
         tsi = ThermalStressIndex(hotspot_rise=0.0)

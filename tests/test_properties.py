@@ -7,17 +7,14 @@ can miss — particularly edge cases at floating-point boundaries.
 
 from __future__ import annotations
 
-import math
-
 import numpy as np
 import pandas as pd
 import pytest
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
 
-from climagrid.features.thermal import ThermalStressIndex, _EA_OVER_K, _T_REF_K
+from climagrid.features.thermal import _EA_OVER_K, _T_REF_K, ThermalStressIndex
 from climagrid.sources.base import BoundingBox
-
 
 # ---------------------------------------------------------------------------
 # BoundingBox invariants

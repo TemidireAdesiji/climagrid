@@ -22,7 +22,6 @@ import pandas as pd
 
 from climagrid.sources.usfs_wfigs import compute_proximity
 
-
 # Distance decay: risk drops to ~5% at this distance (km)
 _HALF_DISTANCE_KM = 10.0
 

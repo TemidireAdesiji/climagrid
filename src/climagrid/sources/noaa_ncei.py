@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import os
 from datetime import datetime
-from typing import Optional
 
 import pandas as pd
 import requests
@@ -52,10 +51,10 @@ class NceiAdapter(BaseEnvironmentalSource):
 
     def __init__(
         self,
-        api_token: Optional[str] = None,
+        api_token: str | None = None,
         radius_km: float = 50.0,
         timeout: int = 30,
-        session: Optional[requests.Session] = None,
+        session: requests.Session | None = None,
     ):
         self._token = api_token or os.environ.get("NOAA_CDO_TOKEN", "")
         self._radius_km = radius_km
@@ -87,7 +86,7 @@ class NceiAdapter(BaseEnvironmentalSource):
 
     def _find_nearest_station(
         self, bbox: BoundingBox, start_dt: datetime, end_dt: datetime
-    ) -> Optional[str]:
+    ) -> str | None:
         lat, lon = bbox.center
         params = {
             "datasetid": _DATASET,

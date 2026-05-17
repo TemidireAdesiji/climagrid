@@ -22,11 +22,11 @@ def _nasa_mock_payload(lat: float = 31.55, lon: float = -97.15) -> dict:
         "geometry": {"type": "Point", "coordinates": [lon, lat, 0]},
         "properties": {
             "parameter": {
-                "T2M":              dict(zip(hours, temps)),
-                "WS10M":            dict(zip(hours, [4.2, 5.1, 3.8, 4.0, 6.0, 5.5])),
-                "ALLSKY_SFC_SW_DWN": dict(zip(hours, [0.0, 200.0, 750.0, 820.0, 600.0, 100.0])),
-                "RH2M":             dict(zip(hours, [45.0, 42.0, 48.0, 50.0, 47.0, 52.0])),
-                "PRECTOTCORR":      dict(zip(hours, [0.0, 0.0, 0.1, 0.0, 0.2, 0.0])),
+                "T2M":              dict(zip(hours, temps, strict=False)),
+                "WS10M":            dict(zip(hours, [4.2, 5.1, 3.8, 4.0, 6.0, 5.5], strict=False)),
+                "ALLSKY_SFC_SW_DWN": dict(zip(hours, [0.0, 200.0, 750.0, 820.0, 600.0, 100.0], strict=False)),
+                "RH2M":             dict(zip(hours, [45.0, 42.0, 48.0, 50.0, 47.0, 52.0], strict=False)),
+                "PRECTOTCORR":      dict(zip(hours, [0.0, 0.0, 0.1, 0.0, 0.2, 0.0], strict=False)),
             }
         },
     }

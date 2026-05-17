@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-import json
 from datetime import datetime, timezone
 
 import pytest
+import requests
 import responses as resp_mock
 
-from climagrid.sources.nasa_power import NasaPowerAdapter, _BASE_URL
 from climagrid.sources.base import BoundingBox
+from climagrid.sources.nasa_power import _BASE_URL, NasaPowerAdapter
 
 
 def _make_nasa_response(lat: float, lon: float) -> dict:
@@ -128,7 +128,7 @@ def test_invalid_time_range_raises():
 def test_http_error_propagates():
     adapter = NasaPowerAdapter()
     resp_mock.add(resp_mock.GET, _BASE_URL, status=500)
-    with pytest.raises(Exception):
+    with pytest.raises(requests.exceptions.HTTPError):
         adapter.fetch_point(
             31.55, -97.15,
             datetime(2024, 7, 15, 0, tzinfo=timezone.utc),

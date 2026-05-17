@@ -7,11 +7,8 @@ Adding a column? Define it here first.
 
 from __future__ import annotations
 
-from typing import Optional
-
 import pandas as pd
 from pydantic import BaseModel, ConfigDict
-
 
 # ---------------------------------------------------------------------------
 # Column descriptors
@@ -129,7 +126,7 @@ ALL_COLUMNS: list[ColumnSpec] = (
 COLUMN_MAP: dict[str, ColumnSpec] = {c.name: c for c in ALL_COLUMNS}
 
 
-def validate_dataframe(df: pd.DataFrame, required_sources: Optional[list[str]] = None) -> list[str]:
+def validate_dataframe(df: pd.DataFrame, required_sources: list[str] | None = None) -> list[str]:
     """Return a list of validation errors (empty = valid)."""
     errors: list[str] = []
 

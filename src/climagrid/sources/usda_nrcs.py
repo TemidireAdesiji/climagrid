@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import math
 from datetime import datetime
-from typing import Optional
 
 import pandas as pd
 import requests
@@ -52,7 +51,7 @@ class NrcsAdapter(BaseEnvironmentalSource):
         self,
         max_distance_km: float = 200.0,
         timeout: int = 30,
-        session: Optional[requests.Session] = None,
+        session: requests.Session | None = None,
     ):
         self._max_distance_km = max_distance_km
         self._timeout = timeout
@@ -81,7 +80,7 @@ class NrcsAdapter(BaseEnvironmentalSource):
 
     def _find_nearest_station(
         self, lat: float, lon: float
-    ) -> Optional[dict]:
+    ) -> dict | None:
         """Return the nearest active SCAN/SNOTEL station that has soil sensors."""
         params = {
             "activeOnly": "true",
@@ -188,7 +187,7 @@ class NrcsAdapter(BaseEnvironmentalSource):
         return df
 
     @staticmethod
-    def _empty_df(lat: float, lon: float, ts: Optional[datetime] = None) -> pd.DataFrame:
+    def _empty_df(lat: float, lon: float, ts: datetime | None = None) -> pd.DataFrame:
         row: dict = {"lat": lat, "lon": lon}
         if ts is not None:
             row["timestamp"] = ts

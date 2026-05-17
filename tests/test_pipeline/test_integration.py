@@ -16,12 +16,9 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
-import pandas as pd
 import pytest
 
 import climagrid
-from climagrid.pipeline.orchestrator import run
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -131,8 +128,6 @@ def test_run_multisource_nasa_power_and_nrcs(waco_assets_csv):
     # NASA POWER columns must be present
     assert "nasa_temperature_2m" in df.columns
 
-    # NRCS may return data — if present, check the column name is correct
-    nrcs_cols = [c for c in df.columns if c.startswith("nrcs_")]
     # Even if no NRCS station was found, features should still be computed from NASA
     assert df["feat_thermal_aging_factor"].notna().any(), \
         "Thermal feature is all NaN even with NASA POWER present"

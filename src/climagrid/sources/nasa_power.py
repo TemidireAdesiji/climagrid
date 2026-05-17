@@ -10,7 +10,6 @@ Docs: https://power.larc.nasa.gov/docs/services/api/
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 import pandas as pd
 import requests
@@ -37,7 +36,7 @@ class NasaPowerAdapter(BaseEnvironmentalSource):
     queries use AssetEnvironmentJoiner to call fetch_point() per asset.
     """
 
-    def __init__(self, timeout: int = 60, session: Optional[requests.Session] = None):
+    def __init__(self, timeout: int = 60, session: requests.Session | None = None):
         self._timeout = timeout
         self._session = session or requests.Session()
 

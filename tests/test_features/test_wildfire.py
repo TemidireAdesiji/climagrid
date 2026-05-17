@@ -1,7 +1,5 @@
 """Tests for WildfireProximityScore."""
 
-import pandas as pd
-import pytest
 
 from climagrid.features.wildfire import WildfireProximityScore
 

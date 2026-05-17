@@ -108,12 +108,8 @@ class ConductorSagIndex:
         h_c = 10.0 * np.sqrt(wind)
         q_conv_per_k = h_c * self._d  # W/(m·K) per unit temperature rise
 
-        # Radiative cooling (W/m) at ambient temperature (lower bound)
-        t_amb_k = temp + 273.15
-        q_rad = self._eps * self._sigma_val * np.pi * self._d * t_amb_k**4
-
         # Steady-state conductor temperature rise above ambient (°C)
-        # Solving: q_solar = q_conv_per_k * delta_T + delta_radiation (ignoring radiation delta for simplicity)
+        # Radiation delta omitted for simplicity (dominated by convection at typical loadings)
         delta_t = np.maximum(q_solar / q_conv_per_k, 0.0)
         t_conductor = temp + delta_t
 

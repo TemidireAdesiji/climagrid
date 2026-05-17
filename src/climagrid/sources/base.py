@@ -43,7 +43,7 @@ class BoundingBox(BaseModel):
         super().__init__(**data)
 
     @model_validator(mode="after")
-    def _check_bounds(self) -> "BoundingBox":
+    def _check_bounds(self) -> BoundingBox:
         if self.min_lat >= self.max_lat:
             raise ValueError(f"min_lat ({self.min_lat}) must be < max_lat ({self.max_lat})")
         if self.min_lon >= self.max_lon:
@@ -55,7 +55,7 @@ class BoundingBox(BaseModel):
         return self
 
     @classmethod
-    def from_center(cls, lat: float, lon: float, radius_km: float) -> "BoundingBox":
+    def from_center(cls, lat: float, lon: float, radius_km: float) -> BoundingBox:
         """Create a bounding box centered on a point with a radius in km."""
         lat_delta = radius_km / 111.0
         lon_delta = radius_km / (111.0 * math.cos(math.radians(lat)))
@@ -90,7 +90,7 @@ class BaseEnvironmentalSource(ABC):
         bbox: BoundingBox,
         start_dt: datetime,
         end_dt: datetime,
-    ) -> "pd.DataFrame":
+    ) -> pd.DataFrame:
         """
         Fetch environmental data for a bounding box over a time range.
 

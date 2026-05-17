@@ -7,14 +7,13 @@ from datetime import datetime, timezone
 import pytest
 import responses as resp_mock
 
-from climagrid.sources.usfs_wfigs import (
-    WfigsAdapter,
-    compute_proximity,
-    _PERIMETERS_URL,
-    _haversine,
-)
 from climagrid.sources.base import BoundingBox
-
+from climagrid.sources.usfs_wfigs import (
+    _PERIMETERS_URL,
+    WfigsAdapter,
+    _haversine,
+    compute_proximity,
+)
 
 _MOCK_GEOJSON = {
     "type": "FeatureCollection",

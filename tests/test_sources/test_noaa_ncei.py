@@ -8,9 +8,8 @@ from datetime import datetime, timezone
 import pytest
 import responses as resp_mock
 
-from climagrid.sources.noaa_ncei import NceiAdapter, _BASE_URL
 from climagrid.sources.base import BoundingBox
-
+from climagrid.sources.noaa_ncei import _BASE_URL, NceiAdapter
 
 _BBOX = BoundingBox(min_lat=31.3, max_lat=31.9, min_lon=-97.4, max_lon=-96.9)
 _START = datetime(2024, 7, 15, tzinfo=timezone.utc)

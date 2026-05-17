@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import math
 from datetime import datetime
-from typing import Optional
 
 import pandas as pd
 import requests
@@ -44,7 +43,7 @@ class WfigsAdapter(BaseEnvironmentalSource):
     def __init__(
         self,
         timeout: int = 30,
-        session: Optional[requests.Session] = None,
+        session: requests.Session | None = None,
     ):
         self._timeout = timeout
         self._session = session or requests.Session()
@@ -148,7 +147,7 @@ def _geojson_centroid(geometry: dict) -> tuple[float, float]:
     def _flatten(c: list) -> None:
         if not c:
             return
-        if isinstance(c[0], (int, float)):
+        if isinstance(c[0], int | float):
             all_points.append(c)
         else:
             for sub in c:

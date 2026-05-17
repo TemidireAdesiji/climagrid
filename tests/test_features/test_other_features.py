@@ -1,13 +1,11 @@
 """Tests for IceLoadingRisk, SoilSaturationIndex, ConductorSagIndex."""
 
-import numpy as np
 import pandas as pd
 import pytest
 
+from climagrid.features.conductor_sag import ConductorSagIndex
 from climagrid.features.ice_loading import IceLoadingRisk
 from climagrid.features.soil import SoilSaturationIndex
-from climagrid.features.conductor_sag import ConductorSagIndex
-
 
 # ---------------------------------------------------------------------------
 # IceLoadingRisk

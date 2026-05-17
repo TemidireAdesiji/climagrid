@@ -8,12 +8,9 @@ Optional fields: asset_type, voltage_kv, install_year, manufacturer.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Union
 
 import geopandas as gpd
 import pandas as pd
-from shapely.geometry import Point
-
 
 REQUIRED_COLUMNS = {"asset_id", "lat", "lon"}
 
@@ -49,8 +46,8 @@ class AssetRegistry:
 
     def __init__(
         self,
-        path: Union[str, Path],
-        asset_type_filter: Union[list[str], None] = None,
+        path: str | Path,
+        asset_type_filter: list[str] | None = None,
     ):
         self._path = Path(path)
         self._gdf = self._load(self._path)
@@ -121,10 +118,7 @@ class AssetRegistry:
 
     def _load_geojson(self, path: Path) -> gpd.GeoDataFrame:
         gdf = gpd.read_file(path)
-        if gdf.crs is None:
-            gdf = gdf.set_crs("EPSG:4326")
-        else:
-            gdf = gdf.to_crs("EPSG:4326")
+        gdf = gdf.set_crs("EPSG:4326") if gdf.crs is None else gdf.to_crs("EPSG:4326")
 
         # Extract lat/lon from geometry if not present
         if "lat" not in gdf.columns:

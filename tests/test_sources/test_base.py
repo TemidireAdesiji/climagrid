@@ -1,6 +1,8 @@
 """Tests for BoundingBox and BaseEnvironmentalSource."""
 
 import pytest
+from pydantic import ValidationError
+
 from climagrid.sources.base import BoundingBox
 
 
@@ -41,5 +43,5 @@ class TestBoundingBox:
 
     def test_frozen(self):
         bbox = BoundingBox(31.3, 31.9, -97.4, -96.9)
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             bbox.min_lat = 30.0  # type: ignore

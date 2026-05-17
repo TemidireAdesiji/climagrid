@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import warnings
 from datetime import datetime, timedelta
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -65,7 +64,7 @@ class HrrrAdapter(BaseEnvironmentalSource):
         self,
         product: str = "sfc",
         fxx: int = 0,
-        save_dir: Optional[str] = None,
+        save_dir: str | None = None,
     ):
         if not _HERBIE_AVAILABLE:
             raise ImportError(
