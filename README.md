@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/banner.png" alt="climagrid" />
+  <img src="https://raw.githubusercontent.com/TemidireAdesiji/climagrid/main/docs/assets/banner.png" alt="climagrid" />
 </p>
 
 <h1 align="center">climagrid</h1>
@@ -36,7 +36,7 @@ The U.S. Department of Energy reports that predictive maintenance can cut equipm
 
 climagrid pulls from five free federal data sources, joins the data to your asset locations, and computes grid stress features ready to drop into any model or spreadsheet. One call in, one DataFrame out.
 
-![climagrid pipeline](docs/assets/pipeline.png)
+![climagrid pipeline](https://raw.githubusercontent.com/TemidireAdesiji/climagrid/main/docs/assets/pipeline.png)
 
 ---
 
@@ -70,11 +70,11 @@ df = climagrid.run(
 df.to_parquet("stress_features.parquet")
 ```
 
-![climagrid terminal demo](docs/assets/demo.gif)
+![climagrid terminal demo](https://raw.githubusercontent.com/TemidireAdesiji/climagrid/main/docs/assets/demo.gif)
 
 You now have a file you can join to your maintenance records and feed into whatever model or spreadsheet you already use. See the [quickstart notebook](examples/quickstart.ipynb) for a worked example.
 
-![Asset thermal stress map — Central Texas](docs/assets/quickstart_map.png)
+![Asset thermal stress map — Central Texas](https://raw.githubusercontent.com/TemidireAdesiji/climagrid/main/docs/assets/quickstart_map.png)
 
 For the lower-level adapter API (fetching individual data sources, custom feature computation) see the [documentation](https://climagrid.readthedocs.io).
 
