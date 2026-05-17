@@ -1,0 +1,76 @@
+digraph climagrid_pipeline {
+
+    rankdir=LR;
+    compound=true;
+    bgcolor="white";
+    pad=0.5;
+    splines=ortho;
+    nodesep=0.4;
+    ranksep=0.9;
+
+    graph [fontname="Helvetica,Arial,sans-serif"];
+    node  [fontname="Helvetica,Arial,sans-serif" fontsize=11 style="filled,rounded"
+           shape=rect margin="0.18,0.10" penwidth=1.5];
+    edge  [color="#94A3B8" penwidth=1.6 arrowsize=0.75];
+
+    // ── Public data sources ────────────────────────────────────────────────
+    subgraph cluster_sources {
+        label="Public Data Sources";
+        labeljust=c;
+        style="filled,rounded";
+        fillcolor="#EFF6FF";
+        color="#3B82F6";
+        penwidth=2;
+        fontcolor="#1D4ED8";
+        fontsize=12;
+        fontname="Helvetica-Bold,Arial-Bold,sans-serif";
+        margin=14;
+
+        hrrr  [label="NOAA HRRR\natmospheric · 3 km"  fillcolor="#DBEAFE" color="#3B82F6" fontcolor="#1E3A5F"];
+        power [label="NASA POWER\nsatellite-derived"   fillcolor="#DBEAFE" color="#3B82F6" fontcolor="#1E3A5F"];
+        ncei  [label="NOAA NCEI\nsurface stations"     fillcolor="#DBEAFE" color="#3B82F6" fontcolor="#1E3A5F"];
+        nrcs  [label="USDA NRCS\nsoil sensors"         fillcolor="#DBEAFE" color="#3B82F6" fontcolor="#1E3A5F"];
+        wfigs [label="USFS WFIGS\nfire perimeters"     fillcolor="#DBEAFE" color="#3B82F6" fontcolor="#1E3A5F"];
+    }
+
+    // ── Asset registry ─────────────────────────────────────────────────────
+    assets [label="Your Assets\nCSV or GeoJSON\nasset_id · lat · lon"
+            fillcolor="#F0FDF4" color="#16A34A" fontcolor="#14532D" penwidth=1.8];
+
+    // ── Core runner ────────────────────────────────────────────────────────
+    run [label="climagrid.run()"
+         shape=ellipse fontsize=13 penwidth=2.5
+         fillcolor="#FFFBEB" color="#D97706" fontcolor="#78350F"];
+
+    // ── Output features ────────────────────────────────────────────────────
+    subgraph cluster_features {
+        label="Grid Stress Features — one row per asset per hour";
+        labeljust=c;
+        style="filled,rounded";
+        fillcolor="#FAF5FF";
+        color="#9333EA";
+        penwidth=2;
+        fontcolor="#7E22CE";
+        fontsize=12;
+        fontname="Helvetica-Bold,Arial-Bold,sans-serif";
+        margin=14;
+
+        thermal [label="feat_thermal_aging_factor"   fillcolor="#F3E8FF" color="#9333EA" fontcolor="#581C87"];
+        sag     [label="feat_conductor_sag_index"    fillcolor="#F3E8FF" color="#9333EA" fontcolor="#581C87"];
+        ice     [label="feat_ice_loading_risk"       fillcolor="#F3E8FF" color="#9333EA" fontcolor="#581C87"];
+        ft      [label="feat_freeze_thaw_cycles"     fillcolor="#F3E8FF" color="#9333EA" fontcolor="#581C87"];
+        soil    [label="feat_soil_saturation_index"  fillcolor="#F3E8FF" color="#9333EA" fontcolor="#581C87"];
+        fire    [label="feat_wildfire_proximity"     fillcolor="#F3E8FF" color="#9333EA" fontcolor="#581C87"];
+    }
+
+    // ── ML DataFrame output ────────────────────────────────────────────────
+    df [label="ML-ready DataFrame"
+        shape=cylinder fontsize=12 penwidth=1.8
+        fillcolor="#F0FDF4" color="#16A34A" fontcolor="#14532D"];
+
+    // ── Edges ──────────────────────────────────────────────────────────────
+    hrrr   -> run [ltail=cluster_sources];
+    assets -> run;
+    run    -> thermal [lhead=cluster_features];
+    fire   -> df      [ltail=cluster_features];
+}
