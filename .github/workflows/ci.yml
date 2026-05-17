@@ -27,6 +27,9 @@ jobs:
       - name: Lint (ruff)
         run: ruff check src/ tests/
 
+      - name: Type check (mypy)
+        run: mypy src/
+
       - name: Run tests (no live APIs)
         run: pytest tests/ -m "not integration" -q --tb=short
 

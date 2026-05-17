@@ -1,0 +1,11 @@
+# Every PR is reviewed by the maintainer by default.
+# More specific rules below override this for their paths.
+
+*                               @TemidireAdesiji @daniell-olaitan
+
+# Source adapters and schema changes require extra scrutiny
+src/climagrid/sources/          @TemidireAdesiji @daniell-olaitan
+src/climagrid/schema.py         @TemidireAdesiji @daniell-olaitan
+
+# CI and publish workflows
+.github/workflows/              @TemidireAdesiji @daniell-olaitan
