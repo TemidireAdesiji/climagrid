@@ -98,7 +98,7 @@ class NceiAdapter(BaseEnvironmentalSource):
         }
         try:
             resp = self._session.get(
-                f"{_BASE_URL}/stations", params=params, timeout=self._timeout
+                f"{_BASE_URL}/stations", params=params, timeout=self._timeout  # type: ignore[arg-type]
             )
             resp.raise_for_status()
             data = resp.json()
@@ -111,7 +111,7 @@ class NceiAdapter(BaseEnvironmentalSource):
 
         # Pick the station with the highest data coverage
         best = max(results, key=lambda s: s.get("datacoverage", 0))
-        return best["id"]
+        return str(best["id"])
 
     def _fetch_station_data(
         self,
@@ -132,7 +132,7 @@ class NceiAdapter(BaseEnvironmentalSource):
         }
         try:
             resp = self._session.get(
-                f"{_BASE_URL}/data", params=params, timeout=self._timeout
+                f"{_BASE_URL}/data", params=params, timeout=self._timeout  # type: ignore[arg-type]
             )
             resp.raise_for_status()
             data = resp.json()
@@ -155,4 +155,4 @@ class NceiAdapter(BaseEnvironmentalSource):
         pivoted["lat"] = lat
         pivoted["lon"] = lon
 
-        return pivoted
+        return pivoted  # type: ignore[no-any-return]

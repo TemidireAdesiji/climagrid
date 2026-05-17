@@ -110,7 +110,7 @@ class NrcsAdapter(BaseEnvironmentalSource):
             return None
 
         nearest["_distance_km"] = dist_km
-        return nearest
+        return nearest  # type: ignore[return-value, no-any-return]
 
     def _fetch_station_data(
         self,
@@ -184,7 +184,7 @@ class NrcsAdapter(BaseEnvironmentalSource):
         df["lat"] = lat
         df["lon"] = lon
         df["nrcs_station_distance_km"] = dist_km
-        return df
+        return df  # type: ignore[no-any-return]
 
     @staticmethod
     def _empty_df(lat: float, lon: float, ts: datetime | None = None) -> pd.DataFrame:

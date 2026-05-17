@@ -77,7 +77,7 @@ class NasaPowerAdapter(BaseEnvironmentalSource):
             "time-standard": "UTC",
         }
 
-        resp = self._session.get(_BASE_URL, params=params, timeout=self._timeout)
+        resp = self._session.get(_BASE_URL, params=params, timeout=self._timeout)  # type: ignore[arg-type]
         resp.raise_for_status()
         payload = resp.json()
 
@@ -115,4 +115,4 @@ class NasaPowerAdapter(BaseEnvironmentalSource):
         df["lon"] = lon
         df = df.reset_index()
 
-        return df
+        return df  # type: ignore[no-any-return]

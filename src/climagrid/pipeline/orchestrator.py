@@ -187,4 +187,4 @@ def run(
                 stacklevel=2,
             )
 
-    return result.reset_index(drop=True)
+    return result.reset_index(drop=True)  # type: ignore[no-any-return]

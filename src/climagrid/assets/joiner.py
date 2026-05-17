@@ -146,7 +146,7 @@ class AssetEnvironmentJoiner:
             front_cols.append(time_col)
         front_cols += ["lat", "lon"]
         remaining = [c for c in result.columns if c not in front_cols]
-        return result[front_cols + remaining].reset_index(drop=True)
+        return result[front_cols + remaining].reset_index(drop=True)  # type: ignore[no-any-return]
 
     def join_point(
         self,

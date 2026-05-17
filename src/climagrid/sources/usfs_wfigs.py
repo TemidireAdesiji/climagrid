@@ -188,7 +188,7 @@ def compute_proximity(
     idx_min = distances.idxmin()
     nearest_km = float(distances[idx_min])
     active = bool(fires_df.loc[idx_min, "fire_active"])
-    area_ha = float(fires_df.loc[idx_min, "fire_area_ha"])
+    area_ha = float(fires_df.loc[idx_min, "fire_area_ha"])  # type: ignore[arg-type]
     return nearest_km, active, area_ha
 
 
