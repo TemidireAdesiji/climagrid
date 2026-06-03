@@ -11,7 +11,6 @@ Used by docs/make_cast.py — not intended to be run directly by users.
 from __future__ import annotations
 
 import subprocess
-import sys
 from pathlib import Path
 
 ROOT     = Path(__file__).parent.parent

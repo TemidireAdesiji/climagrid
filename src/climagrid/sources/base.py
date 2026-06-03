@@ -56,14 +56,19 @@ class BoundingBox(BaseModel):
 
     @classmethod
     def from_center(cls, lat: float, lon: float, radius_km: float) -> BoundingBox:
-        """Create a bounding box centered on a point with a radius in km."""
+        """Create a bounding box centered on a point with a radius in km.
+
+        Edges are clamped to the valid WGS-84 domain ([-90, 90] latitude,
+        [-180, 180] longitude) so that centers near the poles or the
+        antimeridian still yield a valid box rather than raising.
+        """
         lat_delta = radius_km / 111.0
         lon_delta = radius_km / (111.0 * math.cos(math.radians(lat)))
         return cls(
-            min_lat=lat - lat_delta,
-            max_lat=lat + lat_delta,
-            min_lon=lon - lon_delta,
-            max_lon=lon + lon_delta,
+            min_lat=max(lat - lat_delta, -90.0),
+            max_lat=min(lat + lat_delta, 90.0),
+            min_lon=max(lon - lon_delta, -180.0),
+            max_lon=min(lon + lon_delta, 180.0),
         )
 
     @property
