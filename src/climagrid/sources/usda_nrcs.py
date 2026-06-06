@@ -1,5 +1,5 @@
 """
-USDA NRCS adapter — SCAN and SNOTEL soil sensor data.
+USDA NRCS adapter: SCAN and SNOTEL soil sensor data.
 
 Fetches soil moisture, soil temperature, and snow water equivalent from
 the USDA Natural Resources Conservation Service AWDB REST API.
@@ -29,7 +29,7 @@ _ELEMENT_MAP = {
     "WTEQ": "nrcs_snow_water_equivalent",  # Snow Water Equivalent (mm)
 }
 
-# API element query string — wildcard depth for sensor arrays, bare code for point sensors
+# API element query string: wildcard depth for sensor arrays, bare code for point sensors
 _ELEMENTS_QUERY = "SMS:*,STO:*,WTEQ"
 
 
@@ -57,9 +57,20 @@ class NrcsAdapter(BaseEnvironmentalSource):
         self._timeout = timeout
         self._session = session or requests.Session()
 
+    point_based = True
+
     @property
     def source_name(self) -> str:
         return "usda_nrcs"
+
+    def fetch_points(
+        self,
+        points: list[tuple[float, float]],
+        start_dt: datetime,
+        end_dt: datetime,
+    ) -> pd.DataFrame:
+        """Find and fetch the nearest SCAN/SNOTEL station to each asset."""
+        return self._fetch_points_via_bbox(points, start_dt, end_dt, self._max_distance_km)
 
     def fetch(
         self,
@@ -158,7 +169,7 @@ class NrcsAdapter(BaseEnvironmentalSource):
 
         for element_data in station_data.get("data", []):
             elem = element_data.get("stationElement", {})
-            # Live API uses "elementCode"; mock used "elementCd" — handle both
+            # Live API uses "elementCode"; mock used "elementCd": handle both
             element_cd = elem.get("elementCode") or elem.get("elementCd", "")
             col_name = _ELEMENT_MAP.get(element_cd)
             if col_name is None:

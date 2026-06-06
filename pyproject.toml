@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "climagrid"
-version = "0.1.0"
-description = "Climate data, grid-ready — open NOAA/NASA/USDA inputs for electric utility predictive maintenance"
+version = "0.2.0"
+description = "Climate data, grid-ready: standards-based environmental stress features for grid equipment, from free NOAA, NASA, USDA, and USFS data"
 readme = "README.md"
 license = { text = "Apache-2.0" }
 requires-python = ">=3.10"
@@ -50,8 +50,12 @@ nasa = [
 met = [
     "metpy>=1.5",
 ]
+report = [
+    "weasyprint>=60",
+    "matplotlib>=3.7",
+]
 full = [
-    "climagrid[noaa-nwp,nasa,met]",
+    "climagrid[noaa-nwp,nasa,met,report]",
 ]
 dev = [
     "pytest>=7.4",
@@ -68,6 +72,8 @@ dev = [
     "pyarrow>=14.0",
     "hypothesis>=6.0",
     "scikit-learn>=1.3",
+    "pre-commit>=3.5",
+    "matplotlib>=3.7",
 ]
 docs = [
     "sphinx>=7.0",

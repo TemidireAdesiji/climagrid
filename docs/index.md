@@ -2,7 +2,7 @@
 
 **Climate data, grid-ready.**
 
-climagrid is an open-source Python toolkit that converts public NOAA, NASA, USDA, and U.S. Forest Service environmental data into standardized predictive-maintenance input features for electric utility grid resilience systems.
+climagrid is an open-source Python toolkit that converts public NOAA, NASA, USDA, and U.S. Forest Service environmental data into standardized, standards-based environmental stress features for grid equipment, ready to feed into any maintenance model, spreadsheet, or resilience workflow.
 
 Built for rural electric cooperatives and municipal utilities serving approximately 42 million Americans in underserved and high-risk service territories.
 
@@ -25,9 +25,9 @@ df = climagrid.run(
 
 ## Why climagrid?
 
-Electric utilities, especially small rural cooperatives, need high-quality environmental stress data to predict equipment failures before they cascade into outages. The raw inputs exist across several free government APIs, but translating them into ML-ready features requires domain knowledge spanning meteorology, power systems engineering, and geospatial data processing.
+Electric utilities, especially small rural cooperatives, need to understand the environmental stress that weather places on their aging equipment. The raw inputs exist across several free government APIs, but translating them into standards-based, ML-ready features requires domain knowledge spanning meteorology, power systems engineering, and geospatial data processing.
 
-climagrid handles that translation in one place, under an Apache 2.0 license, with no API keys required for the default data sources.
+climagrid handles that translation in one place, under an Apache 2.0 license, with no API keys required for the default data sources. It produces interpretable stress scores grounded in published IEEE and ASCE standards; turning those into failure predictions requires a utility's own failure records and is out of scope (see [Validation Notes](validation_notes.md)).
 
 ---
 
@@ -48,6 +48,7 @@ schema
 
 related_work
 national_impact
+validation_notes
 ```
 
 ```{toctree}

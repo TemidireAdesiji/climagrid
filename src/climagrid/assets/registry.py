@@ -1,5 +1,5 @@
 """
-AssetRegistry — loads utility asset records from CSV or GeoJSON.
+AssetRegistry: loads utility asset records from CSV or GeoJSON.
 
 Each asset must have at minimum: asset_id, lat, lon.
 Optional fields: asset_type, voltage_kv, install_year, manufacturer.
@@ -142,7 +142,7 @@ class AssetRegistry:
 
 
 def load_sample_assets() -> AssetRegistry:
-    """Load the bundled 50-asset sample registry for testing and demos."""
+    """Load the bundled sample registry (33 real substations across 7 states)."""
     here = Path(__file__).parent.parent.parent.parent
     sample_path = here / "examples" / "data" / "sample_assets.csv"
     if not sample_path.exists():

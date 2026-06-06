@@ -1,5 +1,5 @@
 """
-USFS / NIFC WFIGS adapter — wildfire perimeter data.
+USFS / NIFC WFIGS adapter: wildfire perimeter data.
 
 Fetches active and year-to-date fire perimeters from the National
 Interagency Fire Center (NIFC) Wildland Fire Interagency Geospatial

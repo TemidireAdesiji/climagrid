@@ -52,7 +52,10 @@ source .venv/bin/activate      # Windows: .venv\Scripts\activate
 # 3. Install in editable mode with all dev dependencies
 pip install -e ".[dev]"
 
-# 4. Confirm the test suite passes before making any changes
+# 4. Install pre-commit hooks (runs ruff automatically before every commit)
+pre-commit install
+
+# 5. Confirm the test suite passes before making any changes
 pytest tests/ -m "not integration" -q
 ```
 
@@ -120,7 +123,7 @@ By submitting a PR you agree your contributions will be licensed under the Apach
 
 1. Create `src/climagrid/sources/<source_name>.py`
 2. Subclass `BaseEnvironmentalSource` from `climagrid.sources.base`
-3. Implement `source_name` (property) and `fetch(bbox, start_dt, end_dt)`: returns a DataFrame
+3. Implement `source_name` (property) and `fetch(bbox, start_dt, end_dt)`: returns a DataFrame. If the source returns data for one location per request (like NASA POWER, NCEI, NRCS), also set the class attribute `point_based = True` and implement `fetch_points(points, start_dt, end_dt)`; the `_fetch_points_via_bbox` helper on the base class covers the common case. The orchestrator then fetches one location per asset instead of a single centroid point. Grid and region sources (like HRRR, WFIGS) leave `point_based` at its default and use only `fetch`
 4. Name columns using the `source_variable_unit` convention (e.g. `yourapi_temperature_2m`)
 5. Add column definitions to `src/climagrid/schema.py`
 6. Add `"your_source"` to `_SOURCE_MAP` in `src/climagrid/pipeline/orchestrator.py`

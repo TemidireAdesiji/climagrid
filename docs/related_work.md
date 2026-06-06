@@ -29,11 +29,11 @@ atlite converts ERA5 and other reanalysis data into renewable energy capacity fa
 
 **Gap:** atlite targets capacity planning at the regional scale, not asset-level predictive maintenance. It produces capacity factors (how much electricity a turbine would generate), not equipment stress indices (how fast a transformer is aging). It has no concept of individual utility assets, no IEEE standard implementations, and no USDA soil or USFS wildfire data.
 
-climagrid includes a future `from_atlite_cutout()` adapter to enable users who already have atlite cutout files to reuse their atmospheric data as climagrid inputs without re-downloading.
+A planned `from_atlite_cutout()` adapter (not yet implemented) would let users who already have atlite cutout files reuse their atmospheric data as climagrid inputs without re-downloading.
 
 ### herbie
 
-herbie is the most capable NOAA HRRR/GFS/NOMADS access library in Python. climagrid uses herbie internally for its `NoaaHrrrAdapter`.
+herbie is the most capable NOAA HRRR/GFS/NOMADS access library in Python. climagrid uses herbie internally for its `HrrrAdapter`.
 
 **Gap:** herbie fetches and decodes GRIB2 files. It does not join data to point assets, compute engineering stress indices, or integrate multiple government data sources into a single standardized schema. It is a transport layer, not an end-to-end feature pipeline.
 

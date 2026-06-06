@@ -1,5 +1,5 @@
 """
-AssetEnvironmentJoiner — spatially joins environmental data to asset locations.
+AssetEnvironmentJoiner: spatially joins environmental data to asset locations.
 
 For each asset in the registry, finds the nearest data point (grid cell or
 station) in the environmental DataFrame and extracts its time series.

@@ -63,7 +63,7 @@ TX-002,31.7621,-97.0542,distribution_line
 CO-001,39.7392,-104.9903,substation
 ```
 
-A 45-asset sample file is included at `examples/data/sample_assets.csv`.
+A sample file of 33 real electric substations (OpenStreetMap, across 7 U.S. states) is included at `examples/data/sample_assets.csv`.
 
 ---
 

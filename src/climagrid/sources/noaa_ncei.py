@@ -1,5 +1,5 @@
 """
-NOAA NCEI ISD adapter — Integrated Surface Database hourly observations.
+NOAA NCEI ISD adapter: Integrated Surface Database hourly observations.
 
 Fetches hourly surface station data (temperature, wind, precipitation,
 humidity) from NOAA's Climate Data Online API. Free API key required:
@@ -30,7 +30,7 @@ _DTYPE_MAP = {
     "RHAV": "ncei_relative_humidity",  # average daily relative humidity (%)
 }
 
-# CDO dataset — GHCND has reliable daily data from official ASOS/airport stations
+# CDO dataset: GHCND has reliable daily data from official ASOS/airport stations
 _DATASET = "GHCND"
 
 
@@ -63,9 +63,20 @@ class NceiAdapter(BaseEnvironmentalSource):
         if self._token:
             self._session.headers["token"] = self._token
 
+    point_based = True
+
     @property
     def source_name(self) -> str:
         return "noaa_ncei"
+
+    def fetch_points(
+        self,
+        points: list[tuple[float, float]],
+        start_dt: datetime,
+        end_dt: datetime,
+    ) -> pd.DataFrame:
+        """Find and fetch the nearest station to each asset location."""
+        return self._fetch_points_via_bbox(points, start_dt, end_dt, self._radius_km)
 
     def fetch(
         self,

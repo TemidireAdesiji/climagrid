@@ -15,7 +15,7 @@ class TestAssetRegistry:
 
     def test_load_sample_assets(self, sample_assets_path):
         registry = AssetRegistry(sample_assets_path)
-        assert registry.count >= 40  # sample file has 45 assets across 8 states
+        assert registry.count >= 30  # sample file has 33 real substations across 7 states
         assert "asset_type" in registry.assets.columns
 
     def test_geometry_is_point(self, tmp_assets_csv):
@@ -96,4 +96,4 @@ class TestAssetRegistry:
 def test_load_sample_assets_function():
     from climagrid.assets.registry import load_sample_assets
     registry = load_sample_assets()
-    assert registry.count >= 40
+    assert registry.count >= 30  # 33 real substations across 7 states

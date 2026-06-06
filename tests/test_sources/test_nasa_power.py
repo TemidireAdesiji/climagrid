@@ -137,7 +137,7 @@ def test_http_error_propagates():
 
 
 # ---------------------------------------------------------------------------
-# Integration test — hits the real NASA POWER API (no credentials required)
+# Integration test: hits the real NASA POWER API (no credentials required)
 # Run with: pytest -m integration
 # ---------------------------------------------------------------------------
 

@@ -1,5 +1,5 @@
 """
-High-level pipeline orchestrator — fetch, join, and featurize in one call.
+High-level pipeline orchestrator: fetch, join, and featurize in one call.
 
 This is the primary entry point for users who don't want to wire up
 individual adapters manually.
@@ -67,8 +67,9 @@ def run(
         Valid values: ``"thermal"``, ``"freeze_thaw"``, ``"ice_loading"``,
         ``"soil"``, ``"wildfire"``, ``"conductor_sag"``.
     bbox_radius_km:
-        Radius in km to build a bounding box around the asset centroid
-        for data fetching. Default 50 km.
+        Margin in km added around the full asset extent when building the
+        bounding box for grid and station sources. Point-based sources (e.g.
+        NASA POWER) ignore this and fetch one location per asset. Default 50 km.
     max_join_distance_km:
         Maximum distance for spatial join. Assets farther than this from
         any data point will have NaN environmental values. Default 100 km.
@@ -119,12 +120,26 @@ def run(
     if not isinstance(assets, AssetRegistry):
         assets = AssetRegistry(assets)
 
-    # Build bounding box around asset centroid
+    # Build a bounding box that covers ALL assets (plus a margin), so grid and
+    # station sources see the full asset extent rather than a single centroid.
     asset_lats = assets.assets["lat"].values
     asset_lons = assets.assets["lon"].values
-    centroid_lat = float(asset_lats.mean())
-    centroid_lon = float(asset_lons.mean())
-    bbox = BoundingBox.from_center(centroid_lat, centroid_lon, bbox_radius_km)
+    margin_deg = bbox_radius_km / 111.0
+    bbox = BoundingBox(
+        min_lat=max(float(asset_lats.min()) - margin_deg, -90.0),
+        max_lat=min(float(asset_lats.max()) + margin_deg, 90.0),
+        min_lon=max(float(asset_lons.min()) - margin_deg, -180.0),
+        max_lon=min(float(asset_lons.max()) + margin_deg, 180.0),
+    )
+
+    # Unique asset locations for point-based sources: one fetch per location so
+    # geographically spread assets each get weather at their own position.
+    asset_points = [
+        (float(lat), float(lon))
+        for lat, lon in pd.DataFrame({"lat": asset_lats, "lon": asset_lons})
+        .drop_duplicates()
+        .itertuples(index=False, name=None)
+    ]
 
     # Fetch from each source and merge
     env_frames: list[pd.DataFrame] = []
@@ -139,7 +154,10 @@ def run(
         adapter = adapter_cls(**kwargs)
 
         try:
-            raw = adapter.fetch(bbox, start_dt, end_dt)
+            if adapter.point_based:
+                raw = adapter.fetch_points(asset_points, start_dt, end_dt)
+            else:
+                raw = adapter.fetch(bbox, start_dt, end_dt)
         except Exception as exc:
             warnings.warn(
                 f"Source '{source_name}' failed: {exc}. Skipping.",

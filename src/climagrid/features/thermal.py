@@ -1,14 +1,14 @@
 """
-ThermalStressIndex — transformer thermal aging and heat stress features.
+ThermalStressIndex: transformer thermal aging and heat stress features.
 
 Implements two metrics per IEEE C57.91-2011 (Guide for Loading
 Mineral-Oil-Immersed Transformers):
 
-1. Functional Aging Acceleration factor (FAA) — the Arrhenius-based ratio
+1. Functional Aging Acceleration factor (FAA): the Arrhenius-based ratio
    of the insulation aging rate at observed temperature vs. the reference
    (110°C hotspot for normal aging).
 
-2. Heat hours above threshold — cumulative hours in a rolling window where
+2. Heat hours above threshold: cumulative hours in a rolling window where
    the ambient temperature exceeds a configurable threshold (default 35°C).
 
 References
@@ -23,7 +23,7 @@ import pandas as pd
 
 # IEEE C57.91 Arrhenius constants for normal aging (thermally upgraded paper)
 _EA_OVER_K = 15000.0   # E_A / k_B in Kelvin  (derived from IEEE constants)
-_T_REF_K = 383.0       # Reference hotspot temperature: 110°C = 383 K
+_T_REF_K = 383.15      # Reference hotspot temperature: 110°C = 383.15 K (IEEE C57.91)
 
 
 class ThermalStressIndex:
@@ -104,7 +104,7 @@ class ThermalStressIndex:
             _EA_OVER_K * (1.0 / _T_REF_K - 1.0 / hotspot_k)
         )
 
-        # Heat hours above threshold — rolling count per asset
+        # Heat hours above threshold: rolling count per asset
         above_threshold = (temp_c > self._heat_threshold_c).astype(float)
 
         if "asset_id" in df.columns:

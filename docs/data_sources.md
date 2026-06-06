@@ -35,7 +35,7 @@ NASA's Prediction of Worldwide Energy Resources (POWER) project provides hourly 
 
 ## NOAA HRRR
 
-**Module:** `climagrid.sources.noaa_hrrr.NoaaHrrrAdapter`
+**Module:** `climagrid.sources.noaa_hrrr.HrrrAdapter`
 
 NOAA's High-Resolution Rapid Refresh (HRRR) is a 3-km CONUS numerical weather prediction model updated hourly. It is the highest-resolution publicly available NWP product over the continental United States.
 
@@ -66,7 +66,7 @@ NOAA's High-Resolution Rapid Refresh (HRRR) is a 3-km CONUS numerical weather pr
 
 ## NOAA NCEI CDO
 
-**Module:** `climagrid.sources.noaa_ncei.NoaaNceiAdapter`
+**Module:** `climagrid.sources.noaa_ncei.NceiAdapter`
 
 NOAA's National Centers for Environmental Information Climate Data Online (CDO) API provides historical surface station observations from the Global Historical Climatology Network (GHCN) and Integrated Surface Database (ISD).
 
@@ -96,10 +96,11 @@ adapter = NceiAdapter(api_token="your_token_here")
 
 | Column | Units | Description |
 |--------|-------|-------------|
-| `ncei_temperature_dry_bulb` | °C | Dry-bulb temperature |
-| `ncei_wind_speed` | m/s | Wind speed |
-| `ncei_precipitation_hourly` | mm | Hourly precipitation |
-| `ncei_relative_humidity` | % | Relative humidity |
+| `ncei_temperature_max` | °C | Daily maximum temperature |
+| `ncei_temperature_min` | °C | Daily minimum temperature |
+| `ncei_wind_speed` | m/s | Average daily wind speed |
+| `ncei_precipitation_daily` | mm | Daily precipitation |
+| `ncei_relative_humidity` | % | Average daily relative humidity |
 
 **Best for:** Ground truth validation. Actual station measurements vs. model-derived data from NASA POWER or HRRR. Use for bias correction or audit trails in regulatory filings.
 
@@ -107,9 +108,9 @@ adapter = NceiAdapter(api_token="your_token_here")
 
 ## USDA NRCS AWDB
 
-**Module:** `climagrid.sources.usda_nrcs.UsdaNrcsAdapter`
+**Module:** `climagrid.sources.usda_nrcs.NrcsAdapter`
 
-NOAA's Natural Resources Conservation Service (NRCS) operates the Soil Climate Analysis Network (SCAN) and SNOwpack TELemetry (SNOTEL) networks. The Automated Water Database (AWDB) REST API provides hourly soil moisture, soil temperature, and snow water equivalent from ~900 stations across the western U.S.
+The U.S. Department of Agriculture's Natural Resources Conservation Service (NRCS) operates the Soil Climate Analysis Network (SCAN) and SNOwpack TELemetry (SNOTEL) networks. The Automated Water Database (AWDB) REST API provides hourly soil moisture, soil temperature, and snow water equivalent from ~900 stations across the western U.S.
 
 | Property | Value |
 |----------|-------|
@@ -153,6 +154,6 @@ The National Interagency Fire Center (NIFC) Wildland Fire Incident Geospatial Se
 | `wfigs_fire_active` | bool | Any active fire within 50 km |
 | `wfigs_fire_area_ha` | ha | Area of nearest active fire |
 
-**Best for:** Western U.S. cooperatives, transmission lines traversing WUI (wildland–urban interface) terrain, rapid situational awareness during red-flag conditions.
+**Best for:** Western U.S. cooperatives, transmission lines traversing WUI (wildland-urban interface) terrain, rapid situational awareness during red-flag conditions.
 
 The `compute_proximity()` standalone function can be used independently of the adapter to compute fire risk scores from a pre-fetched perimeter DataFrame.

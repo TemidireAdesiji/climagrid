@@ -5,12 +5,10 @@ from __future__ import annotations
 import math
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
+import pandas as pd
 from pydantic import BaseModel, ConfigDict, model_validator
-
-if TYPE_CHECKING:
-    import pandas as pd
 
 
 class BoundingBox(BaseModel):
@@ -84,6 +82,12 @@ class BaseEnvironmentalSource(ABC):
     returning a pandas DataFrame with columns conforming to climagrid.schema.
     """
 
+    # Point-based sources (e.g. NASA POWER) return data for a single location
+    # per request. They set this True and implement fetch_points() so the
+    # orchestrator fetches one location per asset instead of a single point for
+    # the whole, possibly geographically spread, asset set.
+    point_based: bool = False
+
     @property
     @abstractmethod
     def source_name(self) -> str:
@@ -114,6 +118,46 @@ class BaseEnvironmentalSource(ABC):
             Rows indexed by (lat, lon, timestamp). Column names must be
             drawn from climagrid.schema.COLUMN_MAP.
         """
+
+    def fetch_points(
+        self,
+        points: list[tuple[float, float]],
+        start_dt: datetime,
+        end_dt: datetime,
+    ) -> pd.DataFrame:
+        """
+        Fetch data for multiple (lat, lon) point locations.
+
+        Point-based sources (``point_based = True``) override this to return one
+        block of rows per location, each tagged with its own ``lat``/``lon``, so
+        every asset gets weather at its actual position rather than a single
+        shared point. The default raises, since grid and station sources use
+        :meth:`fetch` with a bounding box instead.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__} does not support per-point fetching"
+        )
+
+    def _fetch_points_via_bbox(
+        self,
+        points: list[tuple[float, float]],
+        start_dt: datetime,
+        end_dt: datetime,
+        radius_km: float,
+    ) -> pd.DataFrame:
+        """
+        Fetch per point by issuing a small bounding-box query around each one.
+
+        Shared by station-based sources whose :meth:`fetch` resolves a bounding
+        box to its nearest station: one small bbox per asset yields the nearest
+        station to each asset rather than to the whole set's centroid.
+        """
+        frames: list[pd.DataFrame] = []
+        for lat, lon in points:
+            df = self.fetch(BoundingBox.from_center(lat, lon, radius_km), start_dt, end_dt)
+            if not df.empty:
+                frames.append(df)
+        return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
 
     # ------------------------------------------------------------------
     # Shared helpers available to all adapters

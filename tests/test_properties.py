@@ -2,7 +2,7 @@
 Property-based tests using Hypothesis.
 
 These tests verify mathematical invariants that hand-written unit tests
-can miss — particularly edge cases at floating-point boundaries.
+can miss: particularly edge cases at floating-point boundaries.
 """
 
 from __future__ import annotations

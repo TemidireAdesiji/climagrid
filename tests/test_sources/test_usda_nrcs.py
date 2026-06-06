@@ -99,7 +99,7 @@ def test_haversine_distance():
 
 
 # ---------------------------------------------------------------------------
-# Integration test — hits the real USDA NRCS AWDB API (no credentials required)
+# Integration test: hits the real USDA NRCS AWDB API (no credentials required)
 # Run with: pytest -m integration
 # ---------------------------------------------------------------------------
 

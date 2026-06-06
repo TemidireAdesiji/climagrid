@@ -73,7 +73,7 @@ def test_schema_writes_json_file(runner, tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# fetch command — happy path
+# fetch command: happy path
 # ---------------------------------------------------------------------------
 
 @resp_mock.activate
@@ -129,7 +129,7 @@ def test_fetch_long_form_flag(runner, tmp_assets_csv, tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# fetch command — error paths
+# fetch command: error paths
 # ---------------------------------------------------------------------------
 
 def test_fetch_bad_date_format_exits_nonzero(runner, tmp_assets_csv):

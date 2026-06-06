@@ -25,7 +25,7 @@ def test_hrrr_adapter_raises_import_error_without_herbie():
     """HrrrAdapter must raise ImportError clearly when herbie is not installed."""
     from climagrid.sources import noaa_hrrr
     if noaa_hrrr._HERBIE_AVAILABLE:
-        pytest.skip("herbie is installed — skip ImportError test")
+        pytest.skip("herbie is installed: skip ImportError test")
 
     from climagrid.sources.noaa_hrrr import HrrrAdapter
     with pytest.raises(ImportError, match="(?i)herbie"):
@@ -33,7 +33,7 @@ def test_hrrr_adapter_raises_import_error_without_herbie():
 
 
 # ---------------------------------------------------------------------------
-# _hour_range static method — pure, no deps
+# _hour_range static method: pure, no deps
 # ---------------------------------------------------------------------------
 
 def test_hour_range_returns_correct_count():
@@ -61,7 +61,7 @@ def test_hour_range_empty_when_start_equals_end():
 
 
 # ---------------------------------------------------------------------------
-# _extract_bbox static method — uses real xarray, no herbie
+# _extract_bbox static method: uses real xarray, no herbie
 # ---------------------------------------------------------------------------
 
 def _make_test_dataset(var_name: str = "TMP", value: float = 300.0) -> xr.Dataset:
@@ -158,7 +158,7 @@ def test_fetch_warns_and_continues_on_hour_failure(mock_herbie_cls):
     ok_instance = MagicMock()
     ok_instance.xarray.return_value = ds
 
-    # Herbie() itself raises for the second hour — bubbles through _fetch_one_hour
+    # Herbie() itself raises for the second hour: bubbles through _fetch_one_hour
     mock_herbie_cls.side_effect = [
         ok_instance,
         RuntimeError("GRIB download failed"),
@@ -194,7 +194,7 @@ def test_source_name(mock_herbie_cls):
 
 
 # ---------------------------------------------------------------------------
-# Integration test — downloads a real HRRR GRIB2 file via Herbie
+# Integration test: downloads a real HRRR GRIB2 file via Herbie
 # Run with: pytest -m integration
 # Requires: pip install climagrid[noaa-nwp]
 # Downloads ~5 MB from NOAA NOMADS or AWS NODD (cached after first run)
@@ -204,7 +204,7 @@ def test_source_name(mock_herbie_cls):
 def test_live_fetch_returns_temperature():
     from climagrid.sources import noaa_hrrr
     if not noaa_hrrr._HERBIE_AVAILABLE:
-        pytest.skip("herbie not installed — run: pip install climagrid[noaa-nwp]")
+        pytest.skip("herbie not installed: run: pip install climagrid[noaa-nwp]")
 
     from climagrid.sources.noaa_hrrr import HrrrAdapter
 
@@ -221,7 +221,7 @@ def test_live_fetch_returns_temperature():
     assert "lat" in df.columns
     assert "lon" in df.columns
     assert "timestamp" in df.columns
-    # Temperature should be in °C after conversion (Texas July: expect 20–45°C)
+    # Temperature should be in °C after conversion (Texas July: expect 20-45°C)
     temps = df["hrrr_temperature_2m"].dropna()
     assert not temps.empty, "All temperature values are NaN"
     assert temps.between(-10, 60).all(), f"Unexpected temperature range: {temps.min():.1f} to {temps.max():.1f}"

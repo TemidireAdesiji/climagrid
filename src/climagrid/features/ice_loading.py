@@ -1,9 +1,14 @@
 """
-IceLoadingRisk — ice accretion risk on overhead conductors.
+IceLoadingRisk: ice accretion risk on overhead conductors.
 
 Based on ASCE 7-22 (Minimum Design Loads and Associated Criteria for
 Buildings and Other Structures) Chapter 10 (Ice Loads) conditions,
 combined with the NOAA/NWS ice storm criteria.
+
+This is a SIMPLIFIED screening heuristic: a normalized combination of
+temperature, precipitation, and wind factors. It is not the ASCE 7-22
+ice-load (radial ice-thickness) calculation, which requires freezing-rain
+accretion modeling. Use it for relative screening, not design loads.
 
 Ice accretion risk is HIGH when:
 - Air temperature is between -10°C and +2°C (supercooled liquid water zone)
@@ -81,7 +86,7 @@ class IceLoadingRisk:
         )
         temp_factor = np.clip(temp_factor, 0.0, 1.0)
 
-        # Precipitation factor: normalized 0–1 capped at 10 mm/hr
+        # Precipitation factor: normalized 0-1 capped at 10 mm/hr
         if precip is not None:
             precip_factor = np.where(
                 precip >= self._precip_threshold,
@@ -91,7 +96,7 @@ class IceLoadingRisk:
         else:
             precip_factor = np.where(temp_factor > 0, 0.5, 0.0)
 
-        # Wind factor: normalized 0–1, capped at 20 m/s
+        # Wind factor: normalized 0-1, capped at 20 m/s
         wind_factor = np.clip(wind / 20.0, 0.0, 1.0) if wind is not None else 0.5
 
         # Combined risk: geometric mean of factors (requires ALL conditions)

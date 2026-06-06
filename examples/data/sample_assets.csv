@@ -1,46 +1,34 @@
-asset_id,asset_type,lat,lon,voltage_kv,install_year,manufacturer,description
-TX-001,transformer,31.5493,-97.1467,69,2008,ABB,Distribution substation transformer — Waco area
-TX-002,transformer,31.7619,-97.0514,12.47,2015,Eaton,Pad-mounted distribution transformer
-TX-003,transformer,31.4254,-97.3218,69,2001,GE,Rural substation — exposed hilltop location
-TX-004,transformer,31.6891,-96.9123,12.47,2011,Howard,Pole-mounted — creek crossing proximity
-TX-005,transformer,31.8834,-97.2345,12.47,2019,Cooper,Recently installed — suburban edge
-TX-006,circuit_breaker,31.5100,-97.1800,138,2005,Siemens,Transmission switchyard
-TX-007,circuit_breaker,31.6200,-97.0900,69,2003,ABB,Substation bus tie breaker
-TX-008,transmission_line,31.4500,-97.2700,138,1998,N/A,138 kV span — river crossing
-TX-009,transmission_line,31.7100,-97.1500,69,2002,N/A,69 kV span — agricultural corridor
-TX-010,distribution_line,31.5800,-96.9800,12.47,2009,N/A,Rural lateral — 8 km overhead
-TX-011,transformer,31.3900,-97.3900,12.47,2006,Eaton,Remote rural — last-mile service
-TX-012,transformer,31.9200,-97.0100,12.47,2013,ABB,Edge of service territory
-TX-013,circuit_breaker,31.5500,-97.0500,69,2010,GE,Feeder protection — oak woodland
-TX-014,transformer,31.6500,-97.2100,12.47,2017,Howard,Pad-mounted — new subdivision
-TX-015,distribution_line,31.4800,-97.1200,12.47,2004,N/A,Aging overhead lateral — wildfire risk zone
-OK-001,transformer,35.4676,-97.5164,69,2007,Siemens,Substation transformer — OKC metro edge
-OK-002,transformer,35.3200,-97.4100,12.47,2014,Eaton,Rural cooperative transformer
-OK-003,transformer,35.5900,-97.6200,12.47,2003,GE,Tornado-prone corridor
-OK-004,circuit_breaker,35.4200,-97.5800,138,2009,ABB,Transmission substation
-OK-005,distribution_line,35.3700,-97.6500,12.47,2006,N/A,Rural overhead — high wind exposure
-CO-001,transformer,39.7392,-104.9903,69,2010,ABB,Denver suburban edge substation
-CO-002,transformer,39.5500,-105.1200,12.47,2016,Eaton,Mountain foothill — wildfire interface
-CO-003,transformer,39.8700,-104.8600,12.47,2012,GE,Plains agricultural — hail corridor
-CO-004,transmission_line,39.6300,-105.0500,138,2001,N/A,138 kV mountain crossing
-CO-005,transformer,39.4100,-105.2300,12.47,2008,Cooper,High altitude — freeze-thaw risk
-WA-001,transformer,47.6062,-122.3321,69,2011,Siemens,Pacific Northwest urban substation
-WA-002,transformer,47.4200,-122.1500,12.47,2015,Eaton,Rural cooperative — snow belt
-WA-003,distribution_line,47.8900,-122.2100,12.47,2007,N/A,Overhead rural — ice storm zone
-CA-001,transformer,34.0522,-118.2437,69,2009,ABB,SoCal urban substation
-CA-002,transformer,34.1500,-118.4500,12.47,2013,GE,Wildland-urban interface — extreme fire risk
-CA-003,transformer,33.9200,-118.1800,12.47,2018,Eaton,Coastal — salt fog corrosion zone
-CA-004,distribution_line,34.2200,-118.5500,12.47,2005,N/A,Overhead in high fire risk corridor
-CA-005,circuit_breaker,34.0800,-118.3100,138,2012,Siemens,Transmission switchyard
-MN-001,transformer,44.9778,-93.2650,69,2008,ABB,Minneapolis suburban substation
-MN-002,transformer,44.8500,-93.4200,12.47,2012,Eaton,Rural cooperative — extreme cold exposure
-MN-003,distribution_line,45.0200,-93.1800,12.47,2006,N/A,Overhead rural — heavy ice storm history
-MN-004,transformer,45.1600,-93.5100,12.47,2015,GE,Lake country — moisture/freeze exposure
-LA-001,transformer,29.9511,-90.0715,69,2010,Siemens,New Orleans metro — hurricane zone
-LA-002,transformer,29.8200,-90.1500,12.47,2009,Eaton,Coastal — flood and heat stress
-LA-003,distribution_line,30.0500,-89.9200,12.47,2007,N/A,Overhead — hurricane wind exposure
-MS-001,transformer,32.2988,-90.1848,69,2011,ABB,Jackson area substation
-MS-002,transformer,32.1500,-90.3200,12.47,2014,GE,Rural cooperative — tornado corridor
-NC-001,transformer,35.2271,-80.8431,69,2009,Eaton,Charlotte metro edge
-NC-002,transformer,35.0800,-80.7100,12.47,2013,ABB,Piedmont rural — ice storm zone
-NC-003,distribution_line,35.3400,-80.9200,12.47,2005,N/A,Overhead — 2002 ice storm damage history
+asset_id,asset_type,state,voltage_kv,lat,lon,description
+Rudd Substation,substation,AZ,500,33.41,-112.3171,Real 500 kV electric substation (OpenStreetMap)
+Westwing Substation,substation,AZ,500,33.7075,-112.321,Real 500 kV electric substation (OpenStreetMap)
+Perkins Substation,substation,AZ,500,33.7057,-112.3263,Real 500 kV electric substation (OpenStreetMap)
+Kyrene Substation,substation,AZ,500,33.3518,-111.942,Real 500 kV electric substation (OpenStreetMap)
+Pinnacle Peak Substation,substation,AZ,500,33.7046,-111.9384,Real 500 kV electric substation (OpenStreetMap)
+Levee Substation FPL,substation,FL,500,25.8133,-80.4356,Real 500 kV electric substation (OpenStreetMap)
+Quarry Substation FPL,substation,FL,500,25.8132,-80.4406,Real 500 kV electric substation (OpenStreetMap)
+Flagami Substation,substation,FL,230,25.7682,-80.3433,Real 230 kV electric substation (OpenStreetMap)
+Olympia Heights Substation,substation,FL,230,25.7358,-80.3529,Real 230 kV electric substation (OpenStreetMap)
+Miller Substation,substation,FL,230,25.7133,-80.3658,Real 230 kV electric substation (OpenStreetMap)
+Tech Center Substation,substation,CO,230,39.6334,-104.9021,Real 230 kV electric substation (OpenStreetMap)
+Ridge Substation,substation,CO,230,39.789,-105.1227,Real 230 kV electric substation (OpenStreetMap)
+Arapahoe Switchyard,substation,CO,230,39.6687,-105.0035,Real 230 kV electric substation (OpenStreetMap)
+Chatfield Substation,substation,CO,230,39.5946,-105.111,Real 230 kV electric substation (OpenStreetMap)
+Buckley Substation,substation,CO,230,39.6683,-104.7713,Real 230 kV electric substation (OpenStreetMap)
+Maple Valley Substation,substation,WA,500,47.4687,-122.1876,Real 500 kV electric substation (OpenStreetMap)
+Talbot Substation,substation,WA,230,47.4682,-122.1914,Real 230 kV electric substation (OpenStreetMap)
+Massachusetts Substation,substation,WA,230,47.5887,-122.3359,Real 230 kV electric substation (OpenStreetMap)
+Duwamish Substation,substation,WA,230,47.5145,-122.3072,Real 230 kV electric substation (OpenStreetMap)
+East Pine Substation,substation,WA,230,47.6147,-122.3032,Real 230 kV electric substation (OpenStreetMap)
+Coon Creek Substation,substation,MN,345,45.1373,-93.2846,Real 345 kV electric substation (OpenStreetMap)
+Terminal Substation,substation,MN,345,44.9933,-93.207,Real 345 kV electric substation (OpenStreetMap)
+Kohlman Lake,substation,MN,345,45.0345,-93.0387,Real 345 kV electric substation (OpenStreetMap)
+Eden Prairie Substation,substation,MN,345,44.8629,-93.4353,Real 345 kV electric substation (OpenStreetMap)
+Red Rock,substation,MN,345,44.8875,-93.0115,Real 345 kV electric substation (OpenStreetMap)
+Durham Substation,substation,NC,500,35.9506,-78.7501,Real 500 kV electric substation (OpenStreetMap)
+Wake Substation,substation,NC,500,35.782,-78.4525,Real 500 kV electric substation (OpenStreetMap)
+Duke Energy Substation,substation,NC,230,35.8893,-78.7658,Real 230 kV electric substation (OpenStreetMap)
+Channelview Cogen Substation,substation,TX,345,29.8366,-95.1234,Real 345 kV electric substation (OpenStreetMap)
+O'Brien Substation,substation,TX,345,29.6731,-95.7177,Real 345 kV electric substation (OpenStreetMap)
+King Substation,substation,TX,345,29.9153,-95.2163,Real 345 kV electric substation (OpenStreetMap)
+Addicks Substation,substation,TX,345,29.8228,-95.5729,Real 345 kV electric substation (OpenStreetMap)
+White Oak Substation,substation,TX,345,29.8152,-95.4348,Real 345 kV electric substation (OpenStreetMap)

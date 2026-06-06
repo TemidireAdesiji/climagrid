@@ -1,16 +1,6 @@
-asset_id,asset_type,lat,lon,voltage_kv,install_year,manufacturer,description
-TX-001,transformer,31.5493,-97.1467,69.0,2008,ABB,Distribution substation transformer — Waco area
-TX-002,transformer,31.7619,-97.0514,12.47,2015,Eaton,Pad-mounted distribution transformer
-TX-003,transformer,31.4254,-97.3218,69.0,2001,GE,Rural substation — exposed hilltop location
-TX-004,transformer,31.6891,-96.9123,12.47,2011,Howard,Pole-mounted — creek crossing proximity
-TX-005,transformer,31.8834,-97.2345,12.47,2019,Cooper,Recently installed — suburban edge
-TX-006,circuit_breaker,31.51,-97.18,138.0,2005,Siemens,Transmission switchyard
-TX-007,circuit_breaker,31.62,-97.09,69.0,2003,ABB,Substation bus tie breaker
-TX-008,transmission_line,31.45,-97.27,138.0,1998,,138 kV span — river crossing
-TX-009,transmission_line,31.71,-97.15,69.0,2002,,69 kV span — agricultural corridor
-TX-010,distribution_line,31.58,-96.98,12.47,2009,,Rural lateral — 8 km overhead
-TX-011,transformer,31.39,-97.39,12.47,2006,Eaton,Remote rural — last-mile service
-TX-012,transformer,31.92,-97.01,12.47,2013,ABB,Edge of service territory
-TX-013,circuit_breaker,31.55,-97.05,69.0,2010,GE,Feeder protection — oak woodland
-TX-014,transformer,31.65,-97.21,12.47,2017,Howard,Pad-mounted — new subdivision
-TX-015,distribution_line,31.48,-97.12,12.47,2004,,Aging overhead lateral — wildfire risk zone
+asset_id,asset_type,state,voltage_kv,lat,lon,description
+Channelview Cogen Substation,substation,TX,345,29.8366,-95.1234,Real 345 kV electric substation (OpenStreetMap)
+O'Brien Substation,substation,TX,345,29.6731,-95.7177,Real 345 kV electric substation (OpenStreetMap)
+King Substation,substation,TX,345,29.9153,-95.2163,Real 345 kV electric substation (OpenStreetMap)
+Addicks Substation,substation,TX,345,29.8228,-95.5729,Real 345 kV electric substation (OpenStreetMap)
+White Oak Substation,substation,TX,345,29.8152,-95.4348,Real 345 kV electric substation (OpenStreetMap)

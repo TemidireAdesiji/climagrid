@@ -51,7 +51,7 @@ def _build_events(output: str) -> list[list]:
     events: list[list] = []
     t = 0.0
 
-    # Fake prompt + command typing — shows the actual CLI command users run
+    # Fake prompt + command typing: shows the actual CLI command users run
     cmd = ("climagrid fetch --assets examples/data/tx_assets.csv"
            " --start 2024-07-15 --end 2024-07-16"
            " --sources nasa_power --features all --output stress_features.parquet")

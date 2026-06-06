@@ -17,7 +17,7 @@ class TestIceLoadingRisk:
         assert "feat_ice_loading_risk" in result.columns
 
     def test_summer_texas_zero_risk(self, asset_env_df):
-        """Summer Texas (temps 28–42°C) is well above ice formation range."""
+        """Summer Texas (temps 28-42°C) is well above ice formation range."""
         result = IceLoadingRisk().compute(asset_env_df)
         assert (result["feat_ice_loading_risk"] == 0.0).all()
 
@@ -103,6 +103,30 @@ class TestConductorSagIndex:
         assert (
             csi.compute(high)["feat_conductor_sag_index"].iloc[0]
             > csi.compute(low)["feat_conductor_sag_index"].iloc[0]
+        )
+
+    def test_more_wind_reduces_sag(self):
+        """Physical-behavior check (simplified IEEE 738 model): wind cools the
+        conductor, so more wind must lower the sag index, all else equal."""
+        base = {"hrrr_temperature_2m": [30.0], "hrrr_solar_irradiance_ghi": [600.0]}
+        calm = pd.DataFrame({**base, "hrrr_wind_speed_10m": [0.5]})
+        windy = pd.DataFrame({**base, "hrrr_wind_speed_10m": [12.0]})
+        csi = ConductorSagIndex()
+        assert (
+            csi.compute(windy)["feat_conductor_sag_index"].iloc[0]
+            < csi.compute(calm)["feat_conductor_sag_index"].iloc[0]
+        )
+
+    def test_more_solar_increases_sag(self):
+        """Physical-behavior check: more solar heating raises the sag index,
+        all else equal."""
+        base = {"hrrr_temperature_2m": [40.0], "hrrr_wind_speed_10m": [4.0]}
+        shade = pd.DataFrame({**base, "hrrr_solar_irradiance_ghi": [50.0]})
+        sun = pd.DataFrame({**base, "hrrr_solar_irradiance_ghi": [1000.0]})
+        csi = ConductorSagIndex()
+        assert (
+            csi.compute(sun)["feat_conductor_sag_index"].iloc[0]
+            > csi.compute(shade)["feat_conductor_sag_index"].iloc[0]
         )
 
     def test_missing_temp_returns_nan(self):

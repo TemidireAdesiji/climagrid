@@ -1,5 +1,5 @@
 """
-NASA POWER adapter — surface meteorology via NASA POWER REST API.
+NASA POWER adapter: surface meteorology via NASA POWER REST API.
 
 NASA POWER provides MERRA-2-based hourly surface meteorology at any
 lat/lon point globally. No API key required.
@@ -32,9 +32,11 @@ class NasaPowerAdapter(BaseEnvironmentalSource):
     """
     Fetches hourly surface meteorology from NASA POWER for point locations.
 
-    For a bounding box query the center point is used. For asset-level
-    queries use AssetEnvironmentJoiner to call fetch_point() per asset.
+    For a bounding box query the center point is used. The orchestrator calls
+    fetch_points() to retrieve one location per asset.
     """
+
+    point_based = True
 
     def __init__(self, timeout: int = 60, session: requests.Session | None = None):
         self._timeout = timeout
@@ -43,6 +45,22 @@ class NasaPowerAdapter(BaseEnvironmentalSource):
     @property
     def source_name(self) -> str:
         return "nasa_power"
+
+    def fetch_points(
+        self,
+        points: list[tuple[float, float]],
+        start_dt: datetime,
+        end_dt: datetime,
+    ) -> pd.DataFrame:
+        """Fetch hourly data for each (lat, lon), one API call per location."""
+        frames: list[pd.DataFrame] = []
+        for lat, lon in points:
+            df = self.fetch_point(lat, lon, start_dt, end_dt)
+            if not df.empty:
+                frames.append(df)
+        if not frames:
+            return pd.DataFrame()
+        return pd.concat(frames, ignore_index=True)
 
     def fetch(
         self,

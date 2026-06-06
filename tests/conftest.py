@@ -27,7 +27,7 @@ def end_dt() -> datetime:
 
 @pytest.fixture
 def central_texas_bbox() -> BoundingBox:
-    """Small bounding box around Waco, TX — representative rural cooperative territory."""
+    """Small bounding box around Waco, TX: representative rural cooperative territory."""
     return BoundingBox(min_lat=31.3, max_lat=31.9, min_lon=-97.4, max_lon=-96.9)
 
 
@@ -64,7 +64,7 @@ def synthetic_env_df() -> pd.DataFrame:
 
 @pytest.fixture
 def freezing_env_df() -> pd.DataFrame:
-    """48-hour dataset crossing the freezing point — for freeze-thaw tests."""
+    """48-hour dataset crossing the freezing point: for freeze-thaw tests."""
     timestamps = pd.date_range("2024-01-10", periods=48, freq="h", tz="UTC")
     # Temperature oscillates across 0°C
     temps = 2.0 * np.sin(np.linspace(0, 4 * np.pi, 48)) + 0.5  # crosses 0 multiple times

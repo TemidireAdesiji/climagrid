@@ -21,7 +21,7 @@ import click
 @click.group()
 @click.version_option(package_name="climagrid")
 def main() -> None:
-    """climagrid — climate data, grid-ready.
+    """climagrid: climate data, grid-ready.
 
     Fetch NOAA/NASA/USDA/USFS environmental data and compute
     predictive-maintenance stress features for utility assets.
@@ -127,7 +127,7 @@ def fetch(
         sys.exit(1)
 
     if df.empty:
-        click.secho("Warning: result is empty — check source availability.", fg="yellow")
+        click.secho("Warning: result is empty: check source availability.", fg="yellow")
 
     suffix = output.suffix.lower()
     if long_form and suffix == ".parquet":
@@ -144,6 +144,104 @@ def fetch(
         f"✓ {len(df):,} rows × {df.shape[1]} columns → {out_path} ({fmt})",
         fg="green",
     )
+
+
+@main.command()
+@click.option(
+    "--assets", "-a",
+    required=True,
+    type=click.Path(exists=True, path_type=Path),
+    help="Asset CSV or GeoJSON file (must have asset_id, lat, lon columns).",
+)
+@click.option("--start", "-s", required=True, metavar="YYYY-MM-DD", help="Start date (UTC).")
+@click.option("--end", "-e", required=True, metavar="YYYY-MM-DD", help="End date (UTC, inclusive).")
+@click.option(
+    "--sources", default="nasa_power", show_default=True,
+    help="Comma-separated data source names.",
+)
+@click.option(
+    "--features", default="all", show_default=True,
+    help="Comma-separated feature names or 'all'.",
+)
+@click.option(
+    "--output", "-o",
+    default="climagrid_report.pdf",
+    show_default=True,
+    type=click.Path(path_type=Path),
+    help="Output PDF path. A companion inspection-list CSV is written alongside it.",
+)
+@click.option(
+    "--top-n", default=20, show_default=True,
+    help="Number of highest-priority assets to list in the PDF.",
+)
+@click.option("--title", default=None, help="Report title (optional).")
+@click.option("--bbox-radius", default=50.0, show_default=True, metavar="KM")
+def report(
+    assets: Path,
+    start: str,
+    end: str,
+    sources: str,
+    features: str,
+    output: Path,
+    top_n: int,
+    title: str | None,
+    bbox_radius: float,
+) -> None:
+    """Generate a co-op-ready PDF inspection report (priority list and map)."""
+    import climagrid
+    from climagrid.outputs import generate_report, rank_assets
+
+    try:
+        start_dt = datetime.fromisoformat(start).replace(tzinfo=timezone.utc)
+        end_dt = datetime.fromisoformat(end).replace(tzinfo=timezone.utc)
+    except ValueError as exc:
+        raise click.BadParameter(str(exc), param_hint="--start/--end") from exc
+
+    source_list = [s.strip() for s in sources.split(",") if s.strip()]
+    feature_list: list[str] | str = (
+        "all"
+        if features.strip().lower() == "all"
+        else [f.strip() for f in features.split(",") if f.strip()]
+    )
+
+    click.echo(f"Assets:  {assets}")
+    click.echo(f"Period:  {start} to {end}")
+
+    try:
+        df = climagrid.run(
+            assets, start_dt=start_dt, end_dt=end_dt,
+            sources=source_list, features=feature_list, bbox_radius_km=bbox_radius,
+        )
+    except Exception as exc:
+        click.secho(f"Error: {exc}", fg="red", err=True)
+        sys.exit(1)
+
+    if df.empty:
+        click.secho("Error: no data returned; cannot build a report.", fg="red", err=True)
+        sys.exit(1)
+
+    ranked = rank_assets(df)
+    csv_path = output.with_name(output.stem + "_inspection_list.csv")
+    ranked.to_csv(csv_path, index=False)
+
+    try:
+        pdf_path = generate_report(
+            df, output,
+            title=title or "climagrid asset stress report",
+            top_n=top_n,
+            period=f"{start} to {end}",
+        )
+    except ImportError as exc:
+        click.secho(f"Error: {exc}", fg="red", err=True)
+        click.secho(f"The inspection-list CSV was still written to {csv_path}.", fg="yellow")
+        sys.exit(1)
+
+    top = ranked.head(min(top_n, 10))
+    click.echo("\nHighest-priority assets:")
+    for _, r in top.iterrows():
+        click.echo(f"  {int(r['rank']):>3}. {str(r['asset_id']):<24} {r['dominant_hazard']}")
+    click.secho(f"\n✓ PDF report:      {pdf_path}", fg="green")
+    click.secho(f"✓ Inspection list: {csv_path}", fg="green")
 
 
 @main.command()

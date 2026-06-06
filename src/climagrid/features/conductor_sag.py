@@ -1,5 +1,5 @@
 """
-ConductorSagIndex — thermal sag estimation for overhead T&D lines.
+ConductorSagIndex: thermal sag estimation for overhead T&D lines.
 
 When conductor temperature rises, the aluminum/ACSR strands expand and
 the conductor sags downward, reducing ground clearance. Excessive sag
@@ -7,8 +7,14 @@ causes regulatory violations and phase-to-ground faults.
 
 Thermal sag is governed by the IEEE 738-2012 (Standard for Calculating
 the Current-Temperature Relationship of Bare Overhead Conductors). This
-module implements a simplified version using ambient temperature and solar
-irradiance as primary inputs.
+module implements a SIMPLIFIED subset of that heat balance using ambient
+temperature, solar irradiance, and wind as inputs.
+
+It is a relative stress index, not a calibrated conductor temperature: it
+models forced convection and solar heating only, and omits radiative cooling,
+electrical (Joule) load, and the full IEEE 738 air-property and Morgan
+convection equations. Use it for screening and prioritization, not for line
+rating, which requires the full standard with load.
 
 The output is a normalized index [0, 1] representing sag relative to the
 maximum allowable sag (configurable), suitable as an ML feature.
@@ -43,9 +49,9 @@ class ConductorSagIndex:
         Conductor temperature at which sag reaches the design maximum.
         Default 75°C (typical for ACSR "Drake" conductor per IEEE 738).
     conductor_absorptivity:
-        Solar absorptivity of the conductor surface (0–1). Default 0.5.
+        Solar absorptivity of the conductor surface (0-1). Default 0.5.
     conductor_emissivity:
-        Emissivity for radiated cooling (0–1). Default 0.5.
+        Emissivity for radiated cooling (0-1). Default 0.5.
     conductor_diameter_mm:
         Conductor outer diameter for convective heat loss. Default 28.1 mm (Drake ACSR).
 

@@ -44,7 +44,7 @@ digraph climagrid_pipeline {
 
     // ── Output features ────────────────────────────────────────────────────
     subgraph cluster_features {
-        label="Grid Stress Features — one row per asset per hour";
+        label="Grid Stress Features: one row per asset per hour";
         labeljust=c;
         style="filled,rounded";
         fillcolor="#FAF5FF";

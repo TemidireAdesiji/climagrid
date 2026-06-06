@@ -130,7 +130,7 @@ def test_invalid_time_range_raises():
 
 
 # ---------------------------------------------------------------------------
-# Integration test — hits the real NOAA CDO API
+# Integration test: hits the real NOAA CDO API
 # Run with: pytest -m integration
 # Requires: NOAA_CDO_TOKEN env var set
 # ---------------------------------------------------------------------------
@@ -153,5 +153,5 @@ def test_live_fetch_returns_data():
     assert "lat" in df.columns
     assert "lon" in df.columns
     assert df["ncei_temperature_max"].notna().any(), "All temperature values are NaN"
-    # Waco TX July: expect daily max between 30–45°C
+    # Waco TX July: expect daily max between 30-45°C
     assert df["ncei_temperature_max"].dropna().between(20, 50).all()

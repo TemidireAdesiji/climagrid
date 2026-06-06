@@ -49,3 +49,19 @@ Thumbs.db
 *.parquet
 *.nc
 
+# Validation / research data artifacts (large public downloads, not committed)
+eaglei_outages_*.csv
+MCC.csv
+.cache_*.txt
+.cache_*.parquet
+_assets_*.csv
+_c_*.csv
+
+# Generated report deliverables (local, not part of the package)
+report.html
+report_plain.html
+project_status.html
+climagrid_status_report.pdf
+climagrid_report_nontechnical.pdf
+climagrid_project_status.pdf
+

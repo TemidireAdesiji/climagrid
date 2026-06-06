@@ -28,7 +28,7 @@ For breaking changes (schema column renames, removed public API): a 14-day comme
 
 ## Roadmap
 
-The roadmap is maintained at [docs/roadmap.md](docs/roadmap.md) and discussed in GitHub Discussions. Community members are encouraged to propose new data sources and feature modules through the issue tracker.
+The roadmap is discussed in GitHub Discussions. Community members are encouraged to propose new data sources and feature modules through the issue tracker.
 
 ## Evolution
 
@@ -36,4 +36,4 @@ As the contributor base grows, governance will evolve toward a Steering Committe
 
 ## Security
 
-Report security issues privately to temidireadesiji@gmail.com. Do not open public issues for security vulnerabilities. We aim to respond within 72 hours and publish an advisory within 14 days of a confirmed vulnerability.
+Report security issues privately to temidireadesiji@gmail.com. Do not open public issues for security vulnerabilities. We aim to acknowledge reports within 48 hours and provide a resolution timeline within 5 business days. See [SECURITY.md](SECURITY.md) for the full policy.

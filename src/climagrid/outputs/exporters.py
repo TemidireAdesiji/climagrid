@@ -1,5 +1,5 @@
 """
-Export helpers — write a climagrid environmental DataFrame to various formats.
+Export helpers: write a climagrid environmental DataFrame to various formats.
 """
 
 from __future__ import annotations

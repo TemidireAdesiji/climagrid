@@ -12,8 +12,8 @@ Always present, never null. Uniquely identify each observation.
 
 | Column | Type | Units | Description |
 |--------|------|-------|-------------|
-| `asset_id` | str | — | Utility asset identifier from AssetRegistry |
-| `timestamp` | datetime64[ns, UTC] | — | UTC timestamp of the observation hour |
+| `asset_id` | str | n/a | Utility asset identifier from AssetRegistry |
+| `timestamp` | datetime64[ns, UTC] | n/a | UTC timestamp of the observation hour |
 | `lat` | float64 | degrees | Asset latitude (WGS-84) |
 | `lon` | float64 | degrees | Asset longitude (WGS-84) |
 
@@ -55,10 +55,11 @@ Surface station observations from nearest GHCN station.
 
 | Column | Type | Units | Description |
 |--------|------|-------|-------------|
-| `ncei_temperature_dry_bulb` | float64 | °C | Dry-bulb temperature |
-| `ncei_wind_speed` | float64 | m/s | Wind speed |
-| `ncei_precipitation_hourly` | float64 | mm | Hourly precipitation |
-| `ncei_relative_humidity` | float64 | % | Relative humidity |
+| `ncei_temperature_max` | float64 | °C | Daily maximum temperature |
+| `ncei_temperature_min` | float64 | °C | Daily minimum temperature |
+| `ncei_wind_speed` | float64 | m/s | Average daily wind speed |
+| `ncei_precipitation_daily` | float64 | mm | Daily precipitation |
+| `ncei_relative_humidity` | float64 | % | Average daily relative humidity |
 
 ---
 
@@ -82,7 +83,7 @@ Active wildfire perimeter proximity.
 | Column | Type | Units | Description |
 |--------|------|-------|-------------|
 | `wfigs_nearest_fire_km` | float64 | km | Distance to nearest active fire perimeter edge |
-| `wfigs_fire_active` | bool | — | True if any active fire within 50 km |
+| `wfigs_fire_active` | bool | n/a | True if any active fire within 50 km |
 | `wfigs_fire_area_ha` | float64 | ha | Area of nearest active fire in hectares |
 
 ---
@@ -94,12 +95,12 @@ Computed by `climagrid.features.*`. Values are dimensionless indices or physical
 | Column | Type | Units | Standard | Description |
 |--------|------|-------|----------|-------------|
 | `feat_thermal_aging_factor` | float64 | per-unit | IEEE C57.91 | Arrhenius FAA relative to 110°C reference. Values >1 indicate accelerated aging. |
-| `feat_heat_hours_above_35c` | float64 | hours | — | Cumulative hours with temperature >35°C in rolling 168-hour window |
-| `feat_freeze_thaw_cycles` | float64 | count | — | Freeze–thaw transition count over the rolling window |
-| `feat_ice_loading_risk` | float64 | 0–1 | ASCE 7-22 | Normalized ice accretion risk (temperature × precipitation × wind composite) |
-| `feat_soil_saturation_index` | float64 | 0–1 | — | Normalized soil saturation proxy (0=dry, 1=saturated) |
-| `feat_wildfire_proximity` | float64 | 0–1 | — | Normalized fire proximity score (0=no risk, 1=adjacent to active fire) |
-| `feat_conductor_sag_index` | float64 | 0–1 | IEEE 738-2012 | Normalized thermal sag index (0=no sag risk, 1=at design maximum) |
+| `feat_heat_hours_above_35c` | float64 | hours | n/a | Cumulative hours with temperature >35°C in rolling 168-hour window |
+| `feat_freeze_thaw_cycles` | float64 | count | n/a | Freeze-thaw transition count over the rolling window |
+| `feat_ice_loading_risk` | float64 | 0-1 | ASCE 7-22 (simplified) | Normalized ice accretion risk (temperature × precipitation × wind composite) |
+| `feat_soil_saturation_index` | float64 | 0-1 | n/a | Normalized soil saturation proxy (0=dry, 1=saturated) |
+| `feat_wildfire_proximity` | float64 | 0-1 | n/a | Normalized fire proximity score (0=no risk, 1=adjacent to active fire) |
+| `feat_conductor_sag_index` | float64 | 0-1 | IEEE 738 (simplified) | Normalized thermal sag index (0=no sag risk, 1=at design maximum) |
 
 ---
 

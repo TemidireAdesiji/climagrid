@@ -32,7 +32,7 @@ _WACO_TX = dict(
 _START = datetime(2024, 7, 15, 0,  tzinfo=timezone.utc)
 _END   = datetime(2024, 7, 15, 6,  tzinfo=timezone.utc)
 
-# California bbox used for wildfire test — high summer fire activity
+# California bbox used for wildfire test: high summer fire activity
 _CA_START = datetime(2024, 8, 1, 0, tzinfo=timezone.utc)
 _CA_END   = datetime(2024, 8, 2, 0, tzinfo=timezone.utc)
 
@@ -59,7 +59,7 @@ def california_assets_csv(tmp_path) -> Path:
 
 
 # ---------------------------------------------------------------------------
-# 1. climagrid.run() smoke test — README Quick Start path
+# 1. climagrid.run() smoke test: README Quick Start path
 # ---------------------------------------------------------------------------
 
 @pytest.mark.integration
@@ -67,7 +67,7 @@ def test_run_api_smoke_test(waco_assets_csv):
     """
     Exercises the exact code shown in the README Quick Start.
     Verifies run() returns a non-empty DataFrame with asset_id, timestamp,
-    environmental columns, and feature columns — all non-NaN.
+    environmental columns, and feature columns: all non-NaN.
     """
     df = climagrid.run(
         waco_assets_csv,
@@ -85,15 +85,15 @@ def test_run_api_smoke_test(waco_assets_csv):
     assert "nasa_temperature_2m" in df.columns, "NASA POWER temperature column missing"
     assert "nasa_wind_speed_10m" in df.columns, "NASA POWER wind column missing"
 
-    # Features computed — not all NaN (catches silent fallback miss bugs)
+    # Features computed: not all NaN (catches silent fallback miss bugs)
     assert df["feat_thermal_aging_factor"].notna().any(), \
-        "feat_thermal_aging_factor is all NaN — temp column lookup failed"
+        "feat_thermal_aging_factor is all NaN: temp column lookup failed"
     assert df["feat_conductor_sag_index"].notna().any(), \
-        "feat_conductor_sag_index is all NaN — column lookup failed"
+        "feat_conductor_sag_index is all NaN: column lookup failed"
     assert df["feat_soil_saturation_index"].notna().any(), \
-        "feat_soil_saturation_index is all NaN — precip column lookup failed"
+        "feat_soil_saturation_index is all NaN: precip column lookup failed"
     assert df["feat_freeze_thaw_cycles"].notna().any(), \
-        "feat_freeze_thaw_cycles is all NaN — temp column lookup failed"
+        "feat_freeze_thaw_cycles is all NaN: temp column lookup failed"
 
     # Physical sanity: thermal aging factor must be positive
     assert (df["feat_thermal_aging_factor"].dropna() > 0).all()
@@ -132,17 +132,17 @@ def test_run_multisource_nasa_power_and_nrcs(waco_assets_csv):
     assert df["feat_thermal_aging_factor"].notna().any(), \
         "Thermal feature is all NaN even with NASA POWER present"
     assert df["feat_soil_saturation_index"].notna().any(), \
-        "Soil feature is all NaN — precipitation fallback should have fired"
+        "Soil feature is all NaN: precipitation fallback should have fired"
 
     # Merge must not create more rows than assets × timestamps
     n_assets = df["asset_id"].nunique()
     n_timestamps = df["timestamp"].nunique()
     assert len(df) <= n_assets * n_timestamps * 2, \
-        f"Row count {len(df)} suspiciously large — merge may have cross-joined"
+        f"Row count {len(df)} suspiciously large: merge may have cross-joined"
 
 
 # ---------------------------------------------------------------------------
-# 3. Feature column name contract — checks each feature gets real data
+# 3. Feature column name contract: checks each feature gets real data
 # ---------------------------------------------------------------------------
 
 @pytest.mark.integration
@@ -150,7 +150,7 @@ def test_all_features_produce_non_nan_values_with_nasa_power(waco_assets_csv):
     """
     With NASA POWER as source, every feature that has a NASA fallback column
     must produce at least one non-NaN value. Any all-NaN feature column means
-    its column name lookup failed — a silent contract break.
+    its column name lookup failed: a silent contract break.
     """
     df = climagrid.run(
         waco_assets_csv,
@@ -168,7 +168,7 @@ def test_all_features_produce_non_nan_values_with_nasa_power(waco_assets_csv):
     ]:
         non_nan = df[feat_col].dropna()
         assert not non_nan.empty, (
-            f"{feat_col} is entirely NaN — its temperature column lookup failed. "
+            f"{feat_col} is entirely NaN: its temperature column lookup failed. "
             f"Available columns: {[c for c in df.columns if 'temp' in c.lower()]}"
         )
 
@@ -196,9 +196,9 @@ def test_run_wildfire_path_with_wfigs(california_assets_csv):
 
     assert not df.empty, "WFIGS + NASA POWER run returned empty DataFrame"
     assert "feat_wildfire_proximity" in df.columns, \
-        "feat_wildfire_proximity missing — wildfire feature path broken"
+        "feat_wildfire_proximity missing: wildfire feature path broken"
     assert "wfigs_nearest_fire_km" in df.columns, \
-        "wfigs_nearest_fire_km missing — WFIGS fires_raw handoff failed"
+        "wfigs_nearest_fire_km missing: WFIGS fires_raw handoff failed"
 
     # Score must be in [0, 1]
     scores = df["feat_wildfire_proximity"].dropna()

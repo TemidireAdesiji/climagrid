@@ -107,14 +107,14 @@ def test_haversine_known_distance():
 
 
 # ---------------------------------------------------------------------------
-# Integration test — hits the real USFS NIFC WFIGS ArcGIS API (no credentials required)
+# Integration test: hits the real USFS NIFC WFIGS ArcGIS API (no credentials required)
 # Run with: pytest -m integration
 # Uses a California bbox during a historically active fire period
 # ---------------------------------------------------------------------------
 
 @pytest.mark.integration
 def test_live_fetch_returns_fire_data():
-    # Northern California bbox — high fire activity in summer 2024
+    # Northern California bbox: high fire activity in summer 2024
     bbox = BoundingBox(38.0, 40.5, -122.5, -120.0)
     adapter = WfigsAdapter()
     df = adapter.fetch(

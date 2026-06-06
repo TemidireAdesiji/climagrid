@@ -1,5 +1,5 @@
 """
-WildfireProximityScore — normalized wildfire risk for T&D infrastructure.
+WildfireProximityScore: normalized wildfire risk for T&D infrastructure.
 
 Wildfire is the fastest-growing cause of major U.S. transmission and
 distribution outages. Key risk pathways:

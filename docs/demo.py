@@ -1,11 +1,11 @@
 """
-Demo script — captures the output shown in the README animated gif.
+Demo script: captures the output shown in the README animated gif.
 
 Runs the real `climagrid fetch` CLI command against NASA POWER (no credentials
 needed) and prints a richer feature summary below the CLI output so the gif
 communicates what the output file actually contains.
 
-Used by docs/make_cast.py — not intended to be run directly by users.
+Used by docs/make_cast.py: not intended to be run directly by users.
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ DIM    = "\033[2m"
 
 
 def main() -> None:
-    # Run the real CLI — its output goes straight to stdout so it appears in the gif
+    # Run the real CLI: its output goes straight to stdout so it appears in the gif
     result = subprocess.run(
         [
             "climagrid", "fetch",
@@ -52,7 +52,7 @@ def main() -> None:
 
     print()
     print(f"{DIM}{'─' * 60}{RESET}")
-    print(f"{DIM}  stress_features.parquet written — contents below:{RESET}")
+    print(f"{DIM}  stress_features.parquet written: contents below:{RESET}")
     print(f"{DIM}{'─' * 60}{RESET}")
     print()
     print(f"{CYAN}Inside stress_features.parquet:{RESET}")
@@ -84,7 +84,7 @@ def main() -> None:
 
     plt.theme("dark")
     plt.bar(hours, sag, width=0.7)
-    plt.title(f"Conductor Sag Index — {asset0}  (July 15, UTC hours)")
+    plt.title(f"Conductor Sag Index: {asset0}  (July 15, UTC hours)")
     plt.xlabel("Hour (UTC)")
     plt.ylabel("Sag Index")
     plt.ylim(0, 1)

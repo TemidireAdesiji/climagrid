@@ -1,5 +1,5 @@
 """
-FreezeThawtCycleCounter — counts freeze-thaw transitions in a rolling window.
+FreezeThawtCycleCounter: counts freeze-thaw transitions in a rolling window.
 
 Freeze-thaw cycling causes fatigue in:
 - Overhead conductors (galloping, vibration)

@@ -1,5 +1,5 @@
 """
-SoilSaturationIndex — ground stability proxy for buried cables and pole foundations.
+SoilSaturationIndex: ground stability proxy for buried cables and pole foundations.
 
 High soil saturation increases risk of:
 - Pole foundation heave and subsidence (distribution poles)

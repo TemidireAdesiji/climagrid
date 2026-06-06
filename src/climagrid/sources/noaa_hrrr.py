@@ -1,5 +1,5 @@
 """
-NOAA HRRR adapter — High-Resolution Rapid Refresh NWP model.
+NOAA HRRR adapter: High-Resolution Rapid Refresh NWP model.
 
 Fetches 3-km CONUS hourly analysis fields (temperature, wind, precipitation,
 humidity, solar irradiance) via the Herbie package from NOAA NOMADS or
@@ -55,7 +55,7 @@ class HrrrAdapter(BaseEnvironmentalSource):
         needed for grid asset stress analysis.
     fxx:
         Forecast hour. Use 0 for analysis (best accuracy for past dates),
-        1–18 for near-real-time forecasting.
+        1-18 for near-real-time forecasting.
     save_dir:
         Local directory for GRIB2 file caching. Defaults to ~/data/hrrr.
     """
@@ -105,7 +105,7 @@ class HrrrAdapter(BaseEnvironmentalSource):
         return pd.concat(frames, ignore_index=True)
 
     def _fetch_one_hour(self, dt: datetime, bbox: BoundingBox) -> pd.DataFrame:
-        # Herbie requires a naive UTC datetime — strip tzinfo before passing.
+        # Herbie requires a naive UTC datetime: strip tzinfo before passing.
         # Only pass save_dir when explicitly set; Path(None) raises TypeError.
         herbie_kwargs: dict = dict(
             model="hrrr",

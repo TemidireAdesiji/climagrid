@@ -36,7 +36,7 @@ class TestThermalStressIndex:
         """Temperatures above the reference must produce FAA > 1."""
         tsi = ThermalStressIndex()
         result = tsi.compute(asset_env_df)
-        # Summer Texas temps (28–42°C) + 25°C hotspot rise = 53–67°C hotspot
+        # Summer Texas temps (28-42°C) + 25°C hotspot rise = 53-67°C hotspot
         # All below 110°C reference → FAA should be < 1 (less aging than reference)
         assert (result["feat_thermal_aging_factor"] > 0).all()
 

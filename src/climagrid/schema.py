@@ -31,8 +31,8 @@ class ColumnSpec(BaseModel):
 # ---------------------------------------------------------------------------
 
 INDEX_COLUMNS: list[ColumnSpec] = [
-    ColumnSpec(name="asset_id",   dtype="str",              units="—",       description="Utility asset identifier from AssetRegistry",       source="index", nullable=False),
-    ColumnSpec(name="timestamp",  dtype="datetime64[ns, UTC]", units="—",   description="UTC timestamp of the observation or forecast hour", source="index", nullable=False),
+    ColumnSpec(name="asset_id",   dtype="str",              units="n/a",       description="Utility asset identifier from AssetRegistry",       source="index", nullable=False),
+    ColumnSpec(name="timestamp",  dtype="datetime64[ns, UTC]", units="n/a",   description="UTC timestamp of the observation or forecast hour", source="index", nullable=False),
     ColumnSpec(name="lat",        dtype="float64",          units="degrees", description="Asset latitude (WGS-84)",                           source="index", nullable=False),
     ColumnSpec(name="lon",        dtype="float64",          units="degrees", description="Asset longitude (WGS-84)",                          source="index", nullable=False),
 ]
@@ -68,10 +68,11 @@ NASA_POWER_COLUMNS: list[ColumnSpec] = [
 # ---------------------------------------------------------------------------
 
 NOAA_NCEI_COLUMNS: list[ColumnSpec] = [
-    ColumnSpec(name="ncei_temperature_dry_bulb",  dtype="float64", units="°C",  description="Dry-bulb temperature",                           source="noaa_ncei"),
-    ColumnSpec(name="ncei_wind_speed",            dtype="float64", units="m/s", description="Wind speed",                                     source="noaa_ncei"),
-    ColumnSpec(name="ncei_precipitation_hourly",  dtype="float64", units="mm",  description="Hourly liquid-equivalent precipitation",         source="noaa_ncei"),
-    ColumnSpec(name="ncei_relative_humidity",     dtype="float64", units="%",   description="Relative humidity",                              source="noaa_ncei"),
+    ColumnSpec(name="ncei_temperature_max",       dtype="float64", units="°C",  description="Daily maximum temperature",                      source="noaa_ncei"),
+    ColumnSpec(name="ncei_temperature_min",       dtype="float64", units="°C",  description="Daily minimum temperature",                      source="noaa_ncei"),
+    ColumnSpec(name="ncei_wind_speed",            dtype="float64", units="m/s", description="Average daily wind speed",                       source="noaa_ncei"),
+    ColumnSpec(name="ncei_precipitation_daily",   dtype="float64", units="mm",  description="Daily liquid-equivalent precipitation",          source="noaa_ncei"),
+    ColumnSpec(name="ncei_relative_humidity",     dtype="float64", units="%",   description="Average daily relative humidity",                source="noaa_ncei"),
 ]
 
 # ---------------------------------------------------------------------------
@@ -91,22 +92,22 @@ USDA_NRCS_COLUMNS: list[ColumnSpec] = [
 
 USFS_WFIGS_COLUMNS: list[ColumnSpec] = [
     ColumnSpec(name="wfigs_nearest_fire_km",      dtype="float64", units="km",  description="Distance to nearest active fire perimeter edge", source="usfs_wfigs"),
-    ColumnSpec(name="wfigs_fire_active",          dtype="bool",    units="—",   description="True if any active fire within 50 km",           source="usfs_wfigs"),
+    ColumnSpec(name="wfigs_fire_active",          dtype="bool",    units="n/a",   description="True if any active fire within 50 km",           source="usfs_wfigs"),
     ColumnSpec(name="wfigs_fire_area_ha",         dtype="float64", units="ha",  description="Area of nearest active fire in hectares",         source="usfs_wfigs"),
 ]
 
 # ---------------------------------------------------------------------------
-# Feature (stress index) columns — computed by climagrid.features
+# Feature (stress index) columns: computed by climagrid.features
 # ---------------------------------------------------------------------------
 
 FEATURE_COLUMNS: list[ColumnSpec] = [
     ColumnSpec(name="feat_thermal_aging_factor",   dtype="float64", units="per-unit", description="Arrhenius FAA relative to 110°C reference (IEEE C57.91)",  source="feature"),
     ColumnSpec(name="feat_heat_hours_above_35c",   dtype="float64", units="hours",    description="Cumulative hours with temperature > 35°C in rolling window", source="feature"),
     ColumnSpec(name="feat_freeze_thaw_cycles",     dtype="float64", units="count",    description="Freeze-thaw transition count over the rolling window",       source="feature"),
-    ColumnSpec(name="feat_ice_loading_risk",       dtype="float64", units="0–1",      description="Normalized ice accretion risk (ASCE 7-22 method)",           source="feature"),
-    ColumnSpec(name="feat_soil_saturation_index",  dtype="float64", units="0–1",      description="Normalized soil saturation proxy for ground stability",      source="feature"),
-    ColumnSpec(name="feat_wildfire_proximity",     dtype="float64", units="0–1",      description="Normalized wildfire proximity score (0 = far, 1 = adjacent)", source="feature"),
-    ColumnSpec(name="feat_conductor_sag_index",    dtype="float64", units="0–1",      description="Normalized thermal sag index (IEEE 738 simplified)",         source="feature"),
+    ColumnSpec(name="feat_ice_loading_risk",       dtype="float64", units="0-1",      description="Normalized ice accretion risk (simplified, ASCE 7-22 based)", source="feature"),
+    ColumnSpec(name="feat_soil_saturation_index",  dtype="float64", units="0-1",      description="Normalized soil saturation proxy for ground stability",      source="feature"),
+    ColumnSpec(name="feat_wildfire_proximity",     dtype="float64", units="0-1",      description="Normalized wildfire proximity score (0 = far, 1 = adjacent)", source="feature"),
+    ColumnSpec(name="feat_conductor_sag_index",    dtype="float64", units="0-1",      description="Normalized thermal sag index (IEEE 738 simplified)",         source="feature"),
 ]
 
 # ---------------------------------------------------------------------------
@@ -147,7 +148,7 @@ def validate_dataframe(df: pd.DataFrame, required_sources: list[str] | None = No
             if expected == "float64" and not pd.api.types.is_float_dtype(df[col_name]):
                 errors.append(f"Column {col_name} expected float64, got {actual}")
             elif expected == "bool" and not pd.api.types.is_bool_dtype(df[col_name]):
-                # bool columns are sometimes stored as object — only warn
+                # bool columns are sometimes stored as object: only warn
                 pass
 
     return errors

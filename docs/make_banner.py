@@ -1,5 +1,5 @@
 """
-Generates docs/assets/banner.png — the README hero banner.
+Generates docs/assets/banner.png: the README hero banner.
 
 Run any time:
     python docs/make_banner.py
@@ -178,7 +178,7 @@ def main() -> None:
     print(f"Banner saved: {OUT}  ({OUT.stat().st_size // 1024} KB)")
 
 
-# small shim — avoid importing ImageChops at top level
+# small shim: avoid importing ImageChops at top level
 def ImageChops_alpha(img: Image.Image):  # type: ignore[return]
     return img.split()[3]
 
