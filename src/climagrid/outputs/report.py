@@ -15,6 +15,7 @@ import base64
 import io
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 # feature column -> (plain-language hazard label, engineering standard)
@@ -60,9 +61,9 @@ def rank_assets(df: pd.DataFrame) -> pd.DataFrame:
     dominant = pct.idxmax(axis=1)
     summary["dominant_hazard"] = dominant.map(lambda c: _FEATURE_INFO[c][0])
     summary["dominant_standard"] = dominant.map(lambda c: _FEATURE_INFO[c][1])
-    summary["dominant_value"] = [
-        round(float(summary.loc[i, dominant.iloc[i]]), 4) for i in range(len(summary))
-    ]
+    feat_matrix = summary[feat_cols].to_numpy(dtype=float)
+    dominant_idx = [feat_cols.index(c) for c in dominant]
+    summary["dominant_value"] = np.round(feat_matrix[np.arange(len(summary)), dominant_idx], 4)
 
     summary = summary.sort_values("priority_score", ascending=False).reset_index(drop=True)
     summary.insert(0, "rank", range(1, len(summary) + 1))
