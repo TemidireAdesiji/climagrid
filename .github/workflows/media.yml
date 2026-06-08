@@ -2,9 +2,10 @@ name: Regenerate README media
 
 # Runs on every published release (tag) OR manually from the Actions tab.
 # Generates:
-#   docs/assets/demo.gif       — animated terminal demo
-#   docs/assets/quickstart_map.png — notebook map screenshot
-# and commits both back to the default branch.
+#   docs/assets/demo.gif           animated terminal demo
+#   docs/assets/quickstart_map.png notebook map screenshot
+# and opens a pull request for each, so they merge into the protected default
+# branch instead of pushing to it directly.
 
 on:
   release:
@@ -13,6 +14,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────
@@ -59,13 +61,17 @@ jobs:
           path: docs/assets/demo.gif
           retention-days: 7
 
-      - name: Commit gif to main
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/assets/demo.cast docs/assets/demo.gif
-          git diff --cached --quiet && echo "No changes." || \
-            git commit -m "chore: regenerate demo gif [skip ci]" && git push
+      - name: Open PR with regenerated gif
+        uses: peter-evans/create-pull-request@v6
+        with:
+          add-paths: |
+            docs/assets/demo.cast
+            docs/assets/demo.gif
+          commit-message: "chore: regenerate demo gif"
+          branch: media/demo-gif
+          delete-branch: true
+          title: "chore: regenerate demo gif"
+          body: "Automated regeneration of the terminal demo gif. Merge to update the README media."
 
 
   # ─────────────────────────────────────────────────────────────────────────
@@ -98,7 +104,7 @@ jobs:
             examples/quickstart.ipynb
         env:
           # Notebook saves map PNG to docs/assets/ via relative path
-          # No credentials needed — uses NASA POWER (public)
+          # No credentials needed - uses NASA POWER (public)
           PYTHONPATH: src
 
       - name: Verify PNG was generated
@@ -113,10 +119,12 @@ jobs:
           path: docs/assets/quickstart_map.png
           retention-days: 7
 
-      - name: Commit screenshot to main
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/assets/quickstart_map.png
-          git diff --cached --quiet && echo "No changes." || \
-            git commit -m "chore: regenerate quickstart map screenshot [skip ci]" && git push
+      - name: Open PR with regenerated screenshot
+        uses: peter-evans/create-pull-request@v6
+        with:
+          add-paths: docs/assets/quickstart_map.png
+          commit-message: "chore: regenerate quickstart map screenshot"
+          branch: media/quickstart-map
+          delete-branch: true
+          title: "chore: regenerate quickstart map screenshot"
+          body: "Automated regeneration of the quickstart map screenshot. Merge to update the README media."
