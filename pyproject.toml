@@ -63,9 +63,9 @@ dev = [
     "responses>=0.24",
     "ruff>=0.1",
     "mypy>=1.5",
-    # Pinned exactly: pandas-stubs type inference changes between releases, so an
-    # unpinned range lets local and CI resolve different versions and disagree.
-    "pandas-stubs==3.0.0.260204",
+    # Keep this range (not an exact pin): pandas-stubs 3.x requires Python >=3.11,
+    # but the project supports 3.10, so an exact 3.x pin breaks the 3.10 CI job.
+    "pandas-stubs>=2.0",
     "types-requests>=2.31",
     "ipykernel>=6.25",
     "nbformat>=5.9",
