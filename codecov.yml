@@ -1,0 +1,19 @@
+# Codecov policy.
+#
+# Project status stays enforced (overall coverage must not regress meaningfully).
+# Patch status is informational: some new code, notably the weasyprint PDF
+# rendering in climagrid.outputs.report, cannot run in CI (it needs system
+# libraries pango/cairo), so requiring near-100% patch coverage is unrealistic.
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+    patch:
+      default:
+        informational: true
+
+comment:
+  layout: "reach, diff, files"
+  require_changes: false

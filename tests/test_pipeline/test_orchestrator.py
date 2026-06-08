@@ -2,14 +2,18 @@
 
 from __future__ import annotations
 
+import sys
+import types
 import warnings
 from datetime import datetime, timezone
 
+import pandas as pd
 import pytest
 import responses as resp_mock
 
 import climagrid
-from climagrid.pipeline.orchestrator import run
+from climagrid.pipeline.orchestrator import _FEATURE_MAP, _SOURCE_MAP, run
+from climagrid.sources.base import BaseEnvironmentalSource
 from climagrid.sources.nasa_power import _BASE_URL as _NASA_URL
 
 
@@ -143,3 +147,157 @@ def test_run_failing_source_skipped_with_warning(tmp_assets_csv):
 def test_run_is_exported_from_top_level_module():
     """climagrid.run should be importable directly from the package."""
     assert callable(climagrid.run)
+
+
+# ---------------------------------------------------------------------------
+# Dispatch coverage: non-point (bbox) sources and the multi-source merge.
+# Fake adapters are injected via _SOURCE_MAP so run()'s dispatch is exercised
+# without any real network calls.
+# ---------------------------------------------------------------------------
+
+# tmp_assets_csv carries assets at exactly these three coordinates.
+_ASSET_COORDS = [(31.55, -97.15), (31.76, -97.05), (35.47, -97.52)]
+_START = datetime(2024, 7, 15, tzinfo=timezone.utc)
+_END = datetime(2024, 7, 15, 6, tzinfo=timezone.utc)
+
+
+class _FakeGridAdapter(BaseEnvironmentalSource):
+    """Non-point_based source: run() must dispatch to fetch(bbox)."""
+
+    point_based = False
+
+    @property
+    def source_name(self) -> str:
+        return "fakegrid"
+
+    def fetch(self, bbox, start_dt, end_dt):
+        return pd.DataFrame({
+            "lat": [la for la, _ in _ASSET_COORDS],
+            "lon": [lo for _, lo in _ASSET_COORDS],
+            "timestamp": pd.to_datetime([start_dt] * 3, utc=True),
+            "fakegrid_value": [1.0, 2.0, 3.0],
+        })
+
+
+class _FakePointAdapter(BaseEnvironmentalSource):
+    """point_based source: run() must dispatch to fetch_points()."""
+
+    point_based = True
+
+    @property
+    def source_name(self) -> str:
+        return "fakepoint"
+
+    def fetch(self, bbox, start_dt, end_dt):  # pragma: no cover - never dispatched
+        raise AssertionError("point_based source must use fetch_points")
+
+    def fetch_points(self, points, start_dt, end_dt):
+        return pd.concat(
+            [
+                pd.DataFrame({
+                    "lat": [lat],
+                    "lon": [lon],
+                    "timestamp": pd.to_datetime([start_dt], utc=True),
+                    "fakepoint_value": [9.0],
+                })
+                for lat, lon in points
+            ],
+            ignore_index=True,
+        )
+
+
+class _FakeEmptyAdapter(BaseEnvironmentalSource):
+    """Non-point source returning no data, to exercise the skip path."""
+
+    point_based = False
+
+    @property
+    def source_name(self) -> str:
+        return "fakeempty"
+
+    def fetch(self, bbox, start_dt, end_dt):
+        return pd.DataFrame()
+
+
+def _register_fakes(monkeypatch):
+    mod = types.ModuleType("climagrid_fake_sources")
+    mod._FakeGridAdapter = _FakeGridAdapter
+    mod._FakePointAdapter = _FakePointAdapter
+    mod._FakeEmptyAdapter = _FakeEmptyAdapter
+    monkeypatch.setitem(sys.modules, "climagrid_fake_sources", mod)
+    for name, cls in (
+        ("fakegrid", "_FakeGridAdapter"),
+        ("fakepoint", "_FakePointAdapter"),
+        ("fakeempty", "_FakeEmptyAdapter"),
+    ):
+        monkeypatch.setitem(_SOURCE_MAP, name, ("climagrid_fake_sources", cls))
+
+
+class TestOrchestratorDispatch:
+    def test_non_point_source_uses_bbox_fetch(self, monkeypatch, tmp_assets_csv):
+        # fakegrid is point_based=False, so its column can only appear via run()'s
+        # `else: adapter.fetch(bbox)` branch.
+        _register_fakes(monkeypatch)
+        result = run(tmp_assets_csv, _START, _END, sources=["fakegrid"], features=[])
+        assert "fakegrid_value" in result.columns
+        assert result["asset_id"].nunique() == 3
+
+    def test_merges_multiple_sources(self, monkeypatch, tmp_assets_csv):
+        # Two sources both return data, so run()'s multi-source merge loop runs
+        # and the result carries columns from both.
+        _register_fakes(monkeypatch)
+        result = run(
+            tmp_assets_csv, _START, _END,
+            sources=["fakegrid", "fakepoint"], features=[],
+        )
+        assert "fakegrid_value" in result.columns
+        assert "fakepoint_value" in result.columns
+        assert result["asset_id"].nunique() == 3
+
+    def test_empty_source_is_skipped(self, monkeypatch, tmp_assets_csv):
+        _register_fakes(monkeypatch)
+        result = run(tmp_assets_csv, _START, _END, sources=["fakeempty"], features=[])
+        assert result.empty
+
+    @resp_mock.activate
+    def test_defaults_to_nasa_power_when_sources_omitted(self, tmp_assets_csv):
+        # No sources= argument: run() falls back to ["nasa_power"] (line 101).
+        resp_mock.add(resp_mock.GET, _NASA_URL, json=_nasa_mock_payload(), status=200)
+        result = run(tmp_assets_csv, _START, _END, features=[])
+        assert not result.empty
+        assert "nasa_temperature_2m" in result.columns
+
+    def test_wfigs_source_is_passed_through(self, monkeypatch, tmp_assets_csv):
+        # The usfs_wfigs branch stashes raw fire data separately (line 174).
+        _register_fakes(monkeypatch)
+        monkeypatch.setitem(
+            _SOURCE_MAP, "usfs_wfigs", ("climagrid_fake_sources", "_FakeGridAdapter")
+        )
+        result = run(tmp_assets_csv, _START, _END, sources=["usfs_wfigs"], features=[])
+        assert "fakegrid_value" in result.columns
+
+    def test_failing_feature_is_skipped_with_warning(self, monkeypatch, tmp_assets_csv):
+        # A feature whose compute() raises is warned and skipped (lines 201-202),
+        # without crashing the pipeline.
+        _register_fakes(monkeypatch)
+
+        class _FailingFeature:
+            def compute(self, df):
+                raise RuntimeError("boom")
+
+        fmod = types.ModuleType("climagrid_fake_feature")
+        fmod._FailingFeature = _FailingFeature
+        monkeypatch.setitem(sys.modules, "climagrid_fake_feature", fmod)
+        monkeypatch.setitem(
+            _FEATURE_MAP, "fakefail", ("climagrid_fake_feature", "_FailingFeature")
+        )
+
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            result = run(
+                tmp_assets_csv, _START, _END,
+                sources=["fakegrid"], features=["fakefail"],
+            )
+
+        assert any("fakefail" in str(w.message) for w in caught)
+        assert "fakegrid_value" in result.columns  # pipeline still returns data
