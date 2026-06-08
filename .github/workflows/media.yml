@@ -65,7 +65,7 @@ jobs:
           retention-days: 7
 
       - name: Open PR with regenerated gif
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.MEDIA_PAT }}
           add-paths: |
@@ -125,7 +125,7 @@ jobs:
           retention-days: 7
 
       - name: Open PR with regenerated screenshot
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.MEDIA_PAT }}
           add-paths: docs/assets/quickstart_map.png
