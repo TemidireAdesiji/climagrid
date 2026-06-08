@@ -5,7 +5,9 @@ name: Regenerate README media
 #   docs/assets/demo.gif           animated terminal demo
 #   docs/assets/quickstart_map.png notebook map screenshot
 # and opens a pull request for each, so they merge into the protected default
-# branch instead of pushing to it directly.
+# branch instead of pushing to it directly. Uses the MEDIA_PAT secret (a personal
+# access token) so the PRs trigger the required status checks; the built-in
+# GITHUB_TOKEN cannot trigger other workflows.
 
 on:
   release:
@@ -28,6 +30,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main        # always update main, not the tag
+          token: ${{ secrets.MEDIA_PAT }}
 
       - uses: actions/setup-python@v5
         with:
@@ -64,6 +67,7 @@ jobs:
       - name: Open PR with regenerated gif
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ secrets.MEDIA_PAT }}
           add-paths: |
             docs/assets/demo.cast
             docs/assets/demo.gif
@@ -85,6 +89,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
+          token: ${{ secrets.MEDIA_PAT }}
 
       - uses: actions/setup-python@v5
         with:
@@ -122,6 +127,7 @@ jobs:
       - name: Open PR with regenerated screenshot
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ secrets.MEDIA_PAT }}
           add-paths: docs/assets/quickstart_map.png
           commit-message: "chore: regenerate quickstart map screenshot"
           branch: media/quickstart-map
