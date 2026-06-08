@@ -63,7 +63,9 @@ dev = [
     "responses>=0.24",
     "ruff>=0.1",
     "mypy>=1.5",
-    "pandas-stubs>=2.0",
+    # Pinned exactly: pandas-stubs type inference changes between releases, so an
+    # unpinned range lets local and CI resolve different versions and disagree.
+    "pandas-stubs==3.0.0.260204",
     "types-requests>=2.31",
     "ipykernel>=6.25",
     "nbformat>=5.9",

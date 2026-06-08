@@ -62,8 +62,8 @@ def rank_assets(df: pd.DataFrame) -> pd.DataFrame:
     summary["dominant_hazard"] = dominant.map(lambda c: _FEATURE_INFO[c][0])
     summary["dominant_standard"] = dominant.map(lambda c: _FEATURE_INFO[c][1])
     feat_matrix = summary[feat_cols].to_numpy(dtype=float)
-    dominant_idx = [feat_cols.index(c) for c in dominant]
-    summary["dominant_value"] = np.round(feat_matrix[np.arange(len(summary)), dominant_idx], 4)
+    dominant_pos = pct.to_numpy().argmax(axis=1)
+    summary["dominant_value"] = np.round(feat_matrix[np.arange(len(summary)), dominant_pos], 4)
 
     summary = summary.sort_values("priority_score", ascending=False).reset_index(drop=True)
     summary.insert(0, "rank", range(1, len(summary) + 1))
