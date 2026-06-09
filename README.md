@@ -78,7 +78,7 @@ df.to_parquet("stress_features.parquet")
 
 ![climagrid terminal demo](https://raw.githubusercontent.com/TemidireAdesiji/climagrid/main/docs/assets/demo.gif)
 
-You now have a file you can join to your maintenance records and feed into whatever model or spreadsheet you already use. See the [quickstart notebook](examples/quickstart.ipynb) for a worked example.
+You now have a file you can join to your maintenance records and feed into whatever model or spreadsheet you already use. See the [quickstart notebook](https://github.com/TemidireAdesiji/climagrid/blob/main/examples/quickstart.ipynb) for a worked example.
 
 Prefer a ready-to-read deliverable over a DataFrame? One command turns an asset list into a ranked inspection report (PDF) and an inspection-list CSV, no Python required:
 
@@ -87,7 +87,7 @@ pip install "climagrid[report]"
 climagrid report --assets my_assets.csv --start 2024-07-01 --end 2024-07-31
 ```
 
-Each asset is ranked by the single weather hazard it is most exposed to, with the driving stress and its standard named. It is a prioritization aid, not a failure prediction (see [Validation Notes](docs/validation_notes.md) for what climagrid does and does not establish).
+Each asset is ranked by the single weather hazard it is most exposed to, with the driving stress and its standard named. It is a prioritization aid, not a failure prediction (see [Validation Notes](https://github.com/TemidireAdesiji/climagrid/blob/main/docs/validation_notes.md) for what climagrid does and does not establish).
 
 ![Asset thermal stress map, 33 real substations across 7 U.S. states](https://raw.githubusercontent.com/TemidireAdesiji/climagrid/main/docs/assets/quickstart_map.png)
 
@@ -133,7 +133,7 @@ All sources are free and publicly accessible. NOAA NCEI requires a free API toke
 | NRECA OMF | Simulates rural-coop feeders to evaluate new technologies | climagrid feeds maintenance models, not feeder simulators |
 | EEweather (OpenDSM) | Pulls NOAA temperature for energy-efficiency baselines | climagrid integrates five federal sources and produces grid-stress features |
 
-See the [full related-work review](docs/related_work.md).
+See the [full related-work review](https://github.com/TemidireAdesiji/climagrid/blob/main/docs/related_work.md).
 
 ---
 
@@ -144,17 +144,17 @@ See the [full related-work review](docs/related_work.md).
 - Predictive maintenance, the broader practice, reduces equipment-maintenance costs by **25 to 30 percent** with about a **10-to-1 return on investment** (U.S. Department of Energy). climagrid's contribution is to make the underlying environmental stress data free and accessible, lowering the barrier for smaller utilities to adopt that practice.
 - climagrid is released under the **Apache 2.0 license** so that any utility, regardless of size or budget, can use, modify, and redistribute it freely and permanently.
 
-For more on how climagrid ties into U.S. grid resilience priorities, see [docs/national_impact.md](docs/national_impact.md).
+For more on how climagrid ties into U.S. grid resilience priorities, see [docs/national_impact.md](https://github.com/TemidireAdesiji/climagrid/blob/main/docs/national_impact.md).
 
 ---
 
 ## Citation
 
-If you use climagrid in research, regulatory filings, or utility planning, please cite it using the metadata in [CITATION.cff](CITATION.cff), or:
+If you use climagrid in research, regulatory filings, or utility planning, please cite it using the metadata in [CITATION.cff](https://github.com/TemidireAdesiji/climagrid/blob/main/CITATION.cff), or:
 
 ```
 Adesiji, T. (2026). climagrid: Open-source environmental stress feature toolkit
-to support electric utility predictive maintenance (v0.1.0). Apache 2.0.
+to support electric utility predictive maintenance (v0.2.1). Apache 2.0.
 https://doi.org/10.5281/zenodo.20256535
 ```
 
@@ -162,12 +162,12 @@ https://doi.org/10.5281/zenodo.20256535
 
 ## Contributing
 
-climagrid welcomes contributions from utility engineers, data scientists, and researchers. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to add a new data source adapter or stress feature. Project governance is documented in [GOVERNANCE.md](GOVERNANCE.md).
+climagrid welcomes contributions from utility engineers, data scientists, and researchers. See [CONTRIBUTING.md](https://github.com/TemidireAdesiji/climagrid/blob/main/CONTRIBUTING.md) for how to add a new data source adapter or stress feature. Project governance is documented in [GOVERNANCE.md](https://github.com/TemidireAdesiji/climagrid/blob/main/GOVERNANCE.md).
 
 ---
 
 ## License
 
-Apache License 2.0. See [LICENSE](LICENSE) for full text.
+Apache License 2.0. See [LICENSE](https://github.com/TemidireAdesiji/climagrid/blob/main/LICENSE) for full text.
 
 Copyright 2026 Temidire Adesiji

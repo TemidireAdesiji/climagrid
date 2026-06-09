@@ -7,6 +7,17 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [0.2.1] - 2026-06-08
+
+### Fixed
+- README links to the quickstart notebook and the docs pages now use absolute GitHub URLs, so they resolve on the PyPI project page (relative links returned 404 there)
+
+### Changed
+- README DOI badge and `CITATION.cff` now use the Zenodo concept DOI (`10.5281/zenodo.20256535`), which always resolves to the latest version
+- The README-media regeneration workflow opens pull requests (respecting branch protection) using a token, instead of pushing to the default branch; refreshed the demo gif and quickstart map
+
+[0.2.1]: https://github.com/TemidireAdesiji/climagrid/releases/tag/v0.2.1
+
 ## [0.2.0] - 2026-05-19
 
 ### Added

@@ -13,5 +13,5 @@ License: Apache 2.0
 from climagrid.pipeline.orchestrator import run
 from climagrid.schema import schema_summary, validate_dataframe
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __all__ = ["run", "schema_summary", "validate_dataframe"]
