@@ -138,21 +138,34 @@ matches the nominal level.
 ```python
 config = ForecastConfig(
     calibrate_intervals=True,
-    calibration_method="normalized",  # locally adaptive (default); or "constant"
-    calibration_days=365,             # hold out a full year, see note below
+    calibration_method="mondrian",  # "constant" | "normalized" | "mondrian"
+    calibration_days=365,           # hold out a full year, see note below
 )
 forecast = climagrid.forecast("my_assets.csv", config=config)
 ```
 
-In that run this lifted coverage to about 0.78, close to target. Two honest
-caveats:
+In that run calibration lifted overall coverage to about 0.78, close to target.
+Three methods are available, trading off marginal vs per-season coverage:
+
+- `"constant"`: a single additive width per horizon. Good marginal coverage.
+- `"normalized"`: scales the width by the model's own interval width, so it
+  adapts to local uncertainty. Marginally the most even overall, but the
+  high-stress summer months stay under-covered (about 0.72 in that run).
+- `"mondrian"`: a separate width per meteorological season (keyed on the
+  forecast date). Brings **summer** coverage up to target (about 0.78), which
+  matters most for a grid-stress tool since thermal aging is exponential in
+  temperature and a too-narrow summer interval is the risky case.
+
+Honest caveats:
 
 - The calibration window must span a **full seasonal cycle** (the default 365
   days). A single-season calibration over- or under-corrects on other seasons.
-- The adjustment is calibrated **on average over the year**. The `"normalized"`
-  method adapts the interval width to local uncertainty and is more seasonally
-  even than `"constant"`, but high-stress summer months (where thermal aging is
-  exponential in temperature) can still be mildly under-covered.
+- No method makes every season hit 0.80 at once. In that run the test year's
+  winter was harder than prior winters (year-over-year drift, which conformal
+  cannot remove), so under `"mondrian"` winter sat near 0.73. Adding more
+  calibration years did not change this, confirming it is drift, not sampling.
+  Winter aging is low and benign, so this is the less consequential season to
+  under-cover.
 
 Calibration changes only the interval; the `p50` point forecast and the skill
 scores are unchanged. A calibrated model carries its adjustment through

@@ -51,7 +51,7 @@ def test_min_inference_history_days() -> None:
 def test_calibration_defaults() -> None:
     config = ForecastConfig()
     assert config.calibrate_intervals is False
-    assert config.calibration_method == "normalized"
+    assert config.calibration_method == "mondrian"
     assert config.calibration_days == 365
 
 

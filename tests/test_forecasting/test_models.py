@@ -116,8 +116,9 @@ def test_calibrate_keeps_median_and_monotonic(daily_panel) -> None:
     ).reset_index(drop=True)
 
     model.calibrate(calib, _TARGET)
-    # A conformal width is set for every horizon.
-    assert set(model._conformal) == set(range(1, config.horizon_days + 1))
+    # A conformal width is set for every horizon (keys are (horizon, bin)).
+    horizons = {h for (h, _bin) in model._conformal}
+    assert horizons == set(range(1, config.horizon_days + 1))
     assert all(np.isfinite(v) for v in model._conformal.values())
 
     after = model.predict(latest, _TARGET).sort_values(
@@ -138,4 +139,35 @@ def test_save_load_preserves_calibration(daily_panel, tmp_path) -> None:
 
     loaded = LightGBMForecaster.load(model.save(tmp_path / "cal.joblib"))
     assert loaded._conformal == model._conformal
+    assert loaded._conformal_method == model._conformal_method
     pd.testing.assert_frame_equal(before, loaded.predict(latest, _TARGET))
+
+
+def test_mondrian_calibration_per_season(daily_panel) -> None:
+    config = ForecastConfig(targets=[_TARGET], horizon_days=2, lags=[1, 2, 7])
+    sup, train, calib = _train_calib_split(daily_panel, config)
+    model = LightGBMForecaster(config).fit(train, _TARGET).calibrate(
+        calib, _TARGET, method="mondrian"
+    )
+    assert model._conformal_method == "mondrian"
+
+    # Per (horizon, season) widths, with a -1 pooled fallback for each horizon.
+    seasons_by_h: dict[int, set[int]] = {}
+    for h, season in model._conformal:
+        seasons_by_h.setdefault(h, set()).add(season)
+    for h in range(1, config.horizon_days + 1):
+        assert -1 in seasons_by_h[h]
+        assert seasons_by_h[h] & {0, 1, 2, 3}
+
+    latest = sup.sort_values("date").groupby("asset_id", as_index=False).tail(1)
+    out = model.predict(latest, _TARGET)
+    assert (out["p10"] <= out["p50"] + 1e-9).all()
+    assert (out["p50"] <= out["p90"] + 1e-9).all()
+
+
+def test_unknown_calibration_method_raises(daily_panel) -> None:
+    config = ForecastConfig(targets=[_TARGET], horizon_days=2, lags=[1, 2, 7])
+    sup, train, calib = _train_calib_split(daily_panel, config)
+    model = LightGBMForecaster(config).fit(train, _TARGET)
+    with pytest.raises(ValueError):
+        model.calibrate(calib, _TARGET, method="bogus")

@@ -30,7 +30,7 @@ TARGET_TO_FEATURE: dict[str, str] = {
 
 DailyAgg = Literal["max", "mean", "min"]
 ModelName = Literal["lightgbm", "persistence", "climatology"]
-CalibrationMethod = Literal["normalized", "constant"]
+CalibrationMethod = Literal["normalized", "constant", "mondrian"]
 
 
 class ForecastConfig(BaseModel):
@@ -79,7 +79,10 @@ class ForecastConfig(BaseModel):
         most recent ``calibration_days`` as a calibration set, fit on the rest,
         and adjust the interval so its coverage matches the nominal level.
     calibration_method:
-        ``"normalized"`` (locally adaptive, default) or ``"constant"``.
+        ``"mondrian"`` (default): a separate width per meteorological season,
+        which keeps the high-stress summer interval on target. ``"normalized"``:
+        locally adaptive width (even overall, but summer under-covered).
+        ``"constant"``: a single additive width per horizon.
     calibration_days:
         Size of the held-out calibration window. Should span a full seasonal
         cycle (default 365) so the calibration is not biased to one season.
@@ -107,7 +110,7 @@ class ForecastConfig(BaseModel):
     embargo_days: int | None = Field(default=None, ge=0)
     climatology_window_years: int | None = Field(default=None, ge=1)
     calibrate_intervals: bool = False
-    calibration_method: CalibrationMethod = "normalized"
+    calibration_method: CalibrationMethod = "mondrian"
     calibration_days: int = Field(default=365, ge=30)
     sources: list[str] = Field(default_factory=lambda: ["nasa_power"])
 
