@@ -106,9 +106,10 @@ pip install "climagrid[ml]"
 ```python
 import climagrid
 
+# Train models once (see the forecasting guide / training notebook), then serve:
 forecast = climagrid.forecast(
-    "my_assets.csv",                                       # asset_id, lat, lon
-    config=climagrid.ForecastConfig(calibrate_intervals=True),
+    "my_assets.csv",   # asset_id, lat, lon
+    "models/",         # saved models: a dir with manifest.json, or a single .joblib
 )
 # → per-asset, per-horizon p10 / p50 / p90 stress forecasts
 ```

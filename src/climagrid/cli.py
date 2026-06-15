@@ -252,37 +252,15 @@ def report(
     help="Asset CSV or GeoJSON file (must have asset_id, lat, lon columns).",
 )
 @click.option(
-    "--history-start", default=None, metavar="YYYY-MM-DD",
-    help="Start of training history (UTC). Default: derived from --history-years.",
+    "--model-dir", "-m",
+    required=True,
+    type=click.Path(exists=True, path_type=Path),
+    help="Directory with manifest.json and saved models, or a single .joblib. "
+         "Train these with the forecasting training notebook.",
 )
 @click.option(
     "--history-end", default=None, metavar="YYYY-MM-DD",
-    help="End of training history (UTC). Default: today.",
-)
-@click.option(
-    "--history-years", default=15, show_default=True,
-    help="History length in years when --history-start is not given.",
-)
-@click.option(
-    "--horizon", default=7, show_default=True,
-    help="Forecast horizon in days.",
-)
-@click.option(
-    "--targets", default="feat_thermal_aging_factor", show_default=True,
-    help="Comma-separated stress-feature target columns to forecast.",
-)
-@click.option(
-    "--model", default="lightgbm", show_default=True,
-    type=click.Choice(["lightgbm", "persistence", "climatology"]),
-    help="Forecaster: the trained model or a baseline.",
-)
-@click.option(
-    "--sources", default="nasa_power", show_default=True,
-    help="Comma-separated data source names.",
-)
-@click.option(
-    "--backtest", is_flag=True, default=False,
-    help="Emit a rolling-origin skill-score table instead of a forward forecast.",
+    help="End of the recent window to fetch (UTC). Default: today.",
 )
 @click.option(
     "--output", "-o",
@@ -293,37 +271,12 @@ def report(
 )
 def forecast(
     assets: Path,
-    history_start: str | None,
+    model_dir: Path,
     history_end: str | None,
-    history_years: int,
-    horizon: int,
-    targets: str,
-    model: str,
-    sources: str,
-    backtest: bool,
     output: Path,
 ) -> None:
-    """Forecast asset stress features ahead (probabilistic, standards-based)."""
-    import pandas as pd
-
+    """Forecast asset stress from saved models (load-and-serve; never trains)."""
     import climagrid
-    from climagrid.forecasting import ForecastConfig
-    from climagrid.forecasting.backtest import evaluate
-    from climagrid.forecasting.dataset import build_training_panel
-
-    target_list = [t.strip() for t in targets.split(",") if t.strip()]
-    source_list = [s.strip() for s in sources.split(",") if s.strip()]
-
-    try:
-        config = ForecastConfig(
-            targets=target_list,
-            horizon_days=horizon,
-            model=model,  # type: ignore[arg-type]
-            history_years=history_years,
-            sources=source_list,
-        )
-    except Exception as exc:
-        raise click.BadParameter(str(exc)) from exc
 
     try:
         end_dt = (
@@ -331,33 +284,15 @@ def forecast(
             if history_end
             else datetime.now(timezone.utc)
         )
-        if history_start:
-            start_dt = datetime.fromisoformat(history_start).replace(
-                tzinfo=timezone.utc
-            )
-        else:
-            start_dt = (
-                pd.Timestamp(end_dt) - pd.DateOffset(years=history_years)
-            ).to_pydatetime()
     except ValueError as exc:
-        raise click.BadParameter(str(exc), param_hint="--history-start/--history-end") from exc
+        raise click.BadParameter(str(exc), param_hint="--history-end") from exc
 
-    click.echo(f"Assets:   {assets}")
-    click.echo(f"History:  {start_dt.date()} to {end_dt.date()}")
-    click.echo(f"Targets:  {', '.join(target_list)}")
-    click.echo(f"Horizon:  {horizon} days   Model: {model}")
+    click.echo(f"Assets:  {assets}")
+    click.echo(f"Models:  {model_dir}")
+    click.echo(f"As of:   {end_dt.date()}")
 
     try:
-        if backtest:
-            panel = build_training_panel(assets, start_dt, end_dt, config)
-            if panel.empty:
-                click.secho("Error: no data returned; cannot backtest.", fg="red", err=True)
-                sys.exit(1)
-            result = evaluate(panel, config)
-        else:
-            result = climagrid.forecast(
-                assets, config=config, history_start=start_dt, history_end=end_dt
-            )
+        result = climagrid.forecast(assets, model_dir, history_end=end_dt)
     except ImportError as exc:
         click.secho(f"Error: {exc}", fg="red", err=True)
         sys.exit(1)
@@ -366,7 +301,10 @@ def forecast(
         sys.exit(1)
 
     if result.empty:
-        click.secho("Warning: result is empty: check source availability.", fg="yellow")
+        click.secho(
+            "Warning: empty forecast: check the models and recent data availability.",
+            fg="yellow",
+        )
 
     suffix = output.suffix.lower()
     if suffix == ".csv":

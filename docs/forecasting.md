@@ -21,17 +21,22 @@ pip install "climagrid[ml]"
 
 ## Quick start
 
+`climagrid.forecast` is **load-and-serve**: it loads models you trained earlier
+and serves a forecast. It does not train. Train and save models first (see
+[Saving and reusing a trained model](#saving-and-reusing-a-trained-model) or the
+`examples/kaggle_training.ipynb` notebook), then:
+
 ```python
 import climagrid
-from datetime import datetime, timezone
 
 forecast = climagrid.forecast(
-    "my_assets.csv",                      # asset_id, lat, lon
-    history_start=datetime(2010, 1, 1, tzinfo=timezone.utc),
-    history_end=datetime(2024, 12, 31, tzinfo=timezone.utc),
+    "my_assets.csv",   # asset_id, lat, lon
+    "models/",         # dir with manifest.json + saved models, or a single .joblib
 )
 print(forecast.head())
 ```
+
+It fetches only the recent ~30 days each model needs, so serving is fast.
 
 The result is long form, one row per `(asset_id, origin_date, target,
 horizon_day)`:
@@ -48,9 +53,11 @@ horizon_day)`:
 `p50` is the point forecast; `p10`-`p90` is an 80% prediction interval. The
 quantiles are guaranteed non-decreasing (`p10 <= p50 <= p90`).
 
-## Configuration
+## Configuration (training)
 
-Everything is controlled by `ForecastConfig`:
+`ForecastConfig` controls how a model is **trained** (targets, horizon, history,
+quantiles, calibration). You pass it when fitting a model; `forecast` reads the
+config back from the saved model, so you do not pass it at serve time.
 
 ```python
 from climagrid import ForecastConfig
@@ -60,10 +67,8 @@ config = ForecastConfig(
     horizon_days=7,                         # forecast up to 7 days ahead
     history_years=15,                       # default training history length
     quantiles=[0.1, 0.5, 0.9],              # prediction-interval quantiles
-    model="lightgbm",                       # or "persistence" / "climatology"
+    calibrate_intervals=True,               # conformal interval calibration
 )
-
-forecast = climagrid.forecast("my_assets.csv", config=config)
 ```
 
 The default target is `feat_thermal_aging_factor`, a per-row Arrhenius function
@@ -141,7 +146,7 @@ config = ForecastConfig(
     calibration_method="mondrian",  # "constant" | "normalized" | "mondrian"
     calibration_days=365,           # hold out a full year, see note below
 )
-forecast = climagrid.forecast("my_assets.csv", config=config)
+# set this on the config you train the model with; it is saved with the model.
 ```
 
 In that run calibration lifted overall coverage to about 0.78, close to target.
@@ -181,22 +186,25 @@ or a Kaggle Dataset) so you fetch once and reuse.
 
 ## Saving and reusing a trained model
 
-Training and inference are the same call by default (`forecast` fits a fresh
-model each time). To train once on long history and reuse the model cheaply,
-save it and reload it:
+`forecast` only serves; training is a separate, explicit step. Train once on
+long history, save the model, then serve it cheaply:
 
 ```python
+from climagrid import forecast
 from climagrid.forecasting import ForecastConfig
 from climagrid.forecasting.dataset import build_supervised_frame, build_training_panel
 from climagrid.forecasting.models import LightGBMForecaster
 
 config = ForecastConfig()
 panel = build_training_panel("my_assets.csv", start, end, config)
-model = LightGBMForecaster(config).fit(build_supervised_frame(panel, config.targets[0], config), config.targets[0])
+target = config.targets[0]
+model = LightGBMForecaster(config).fit(
+    build_supervised_frame(panel, target, config), target
+)
 model.save("thermal_model.joblib")
 
-# later, anywhere:
-model = LightGBMForecaster.load("thermal_model.joblib")
+# later, anywhere - load-and-serve, no retraining:
+forecast_df = forecast("my_assets.csv", "thermal_model.joblib")
 ```
 
 Inference does **not** need the full training history. The predictors are
@@ -213,9 +221,9 @@ period to pick the most accurate, and saves every model for download.
 ## Command line
 
 ```bash
-# Forward forecast
-climagrid forecast --assets my_assets.csv --horizon 7 -o forecast.parquet
-
-# Rolling-origin skill-score table instead of a forward forecast
-climagrid forecast --assets my_assets.csv --backtest -o skill.csv
+# Serve a forecast from saved models (a directory with manifest.json, or one .joblib)
+climagrid forecast --assets my_assets.csv --model-dir models/ -o forecast.parquet
 ```
+
+Backtesting (rolling-origin skill scores) is done programmatically with
+`climagrid.forecasting.evaluate` or in the training notebook, not via the CLI.

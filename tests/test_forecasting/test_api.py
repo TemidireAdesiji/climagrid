@@ -1,97 +1,96 @@
-"""End-to-end tests for climagrid.forecast with a mocked run()."""
+"""Tests for climagrid.forecast (load-and-serve from saved models)."""
 
 from __future__ import annotations
 
+import json
 from datetime import datetime, timezone
 
 import pytest
 
 from climagrid.forecasting import forecast
 from climagrid.forecasting.config import ForecastConfig
+from climagrid.forecasting.dataset import build_supervised_frame
+from climagrid.forecasting.models import LightGBMForecaster
 
 _TARGET = "feat_thermal_aging_factor"
+_END = datetime(2024, 12, 31, tzinfo=timezone.utc)
 
 
-def _range() -> tuple[datetime, datetime]:
-    return (
-        datetime(2021, 1, 1, tzinfo=timezone.utc),
-        datetime(2021, 4, 30, tzinfo=timezone.utc),
-    )
+def _train_and_save(daily_panel, tmp_path, name="model_x.joblib"):
+    """Train a model offline (no fetching) and save it; return its path."""
+    config = ForecastConfig(targets=[_TARGET], horizon_days=2, lags=[1, 2, 7])
+    sup = build_supervised_frame(daily_panel, _TARGET, config)
+    model = LightGBMForecaster(config).fit(sup, _TARGET)
+    return model.save(tmp_path / name)
 
 
-def test_forecast_lightgbm_end_to_end(two_asset_csv, mock_run_fn) -> None:
+def test_forecast_from_single_model_file(
+    daily_panel, two_asset_csv, mock_run_fn, tmp_path
+) -> None:
     pytest.importorskip("lightgbm")
-    config = ForecastConfig(targets=[_TARGET], horizon_days=3, lags=[1, 2, 7])
-    start, end = _range()
+    path = _train_and_save(daily_panel, tmp_path)
 
-    result = forecast(
-        two_asset_csv,
-        config=config,
-        history_start=start,
-        history_end=end,
-        run_fn=mock_run_fn,
-    )
+    result = forecast(two_asset_csv, path, history_end=_END, run_fn=mock_run_fn)
 
     assert not result.empty
     assert {"asset_id", "forecast_date", "horizon_day", "p10", "p50", "p90"} <= set(
         result.columns
     )
-    assert sorted(result["horizon_day"].unique()) == [1, 2, 3]
+    assert sorted(result["horizon_day"].unique()) == [1, 2]
     assert (result["p10"] <= result["p50"] + 1e-9).all()
     assert (result["p50"] <= result["p90"] + 1e-9).all()
 
 
-def test_forecast_with_calibration(two_asset_csv, mock_run_fn) -> None:
+def test_forecast_from_loaded_instance(
+    daily_panel, two_asset_csv, mock_run_fn, tmp_path
+) -> None:
     pytest.importorskip("lightgbm")
-    # A 2-year range gives enough history to hold out a calibration window.
-    config = ForecastConfig(
-        targets=[_TARGET],
-        horizon_days=2,
-        lags=[1, 2, 7],
-        calibrate_intervals=True,
-        calibration_days=120,
-    )
-    result = forecast(
-        two_asset_csv,
-        config=config,
-        history_start=datetime(2021, 1, 1, tzinfo=timezone.utc),
-        history_end=datetime(2022, 12, 31, tzinfo=timezone.utc),
-        run_fn=mock_run_fn,
-    )
+    model = LightGBMForecaster.load(_train_and_save(daily_panel, tmp_path))
+    result = forecast(two_asset_csv, model, history_end=_END, run_fn=mock_run_fn)
     assert not result.empty
-    assert (result["p10"] <= result["p50"] + 1e-9).all()
-    assert (result["p50"] <= result["p90"] + 1e-9).all()
 
 
-def test_forecast_persistence_collapses_interval(two_asset_csv, mock_run_fn) -> None:
-    config = ForecastConfig(targets=[_TARGET], horizon_days=2, model="persistence")
-    start, end = _range()
-    result = forecast(
-        two_asset_csv,
-        config=config,
-        history_start=start,
-        history_end=end,
-        run_fn=mock_run_fn,
-    )
+def test_forecast_from_manifest_dir_adds_recommendation(
+    daily_panel, two_asset_csv, mock_run_fn, tmp_path
+) -> None:
+    pytest.importorskip("lightgbm")
+    _train_and_save(daily_panel, tmp_path, name="model_x.joblib")
+    manifest = {
+        "factors": [_TARGET],
+        "horizon_days": 2,
+        "min_inference_history_days": 30,
+        "per_factor": {
+            _TARGET: {
+                "history_years": 10,
+                "model_file": "model_x.joblib",
+                "recommendation": "lightgbm",
+            }
+        },
+    }
+    (tmp_path / "manifest.json").write_text(json.dumps(manifest))
+
+    result = forecast(two_asset_csv, tmp_path, history_end=_END, run_fn=mock_run_fn)
+
     assert not result.empty
-    # A point baseline has no spread: p10 == p50 == p90.
-    assert (result["p10"] == result["p50"]).all()
-    assert (result["p50"] == result["p90"]).all()
+    assert "recommendation" in result.columns
+    assert (result["recommendation"] == "lightgbm").all()
 
 
-def test_forecast_empty_panel_returns_empty(two_asset_csv) -> None:
+def test_forecast_empty_when_no_recent_data(
+    daily_panel, two_asset_csv, tmp_path
+) -> None:
+    pytest.importorskip("lightgbm")
+    path = _train_and_save(daily_panel, tmp_path)
+
     def _empty_run(*args: object, **kwargs: object):
         import pandas as pd
 
         return pd.DataFrame()
 
-    config = ForecastConfig(targets=[_TARGET], horizon_days=2)
-    start, end = _range()
-    result = forecast(
-        two_asset_csv,
-        config=config,
-        history_start=start,
-        history_end=end,
-        run_fn=_empty_run,
-    )
+    result = forecast(two_asset_csv, path, history_end=_END, run_fn=_empty_run)
     assert result.empty
+
+
+def test_forecast_missing_manifest_raises(two_asset_csv, tmp_path) -> None:
+    with pytest.raises(FileNotFoundError):
+        forecast(two_asset_csv, tmp_path)  # empty dir, no manifest.json
