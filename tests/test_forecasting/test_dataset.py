@@ -5,7 +5,9 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 import numpy as np
+import pandas as pd
 
+from climagrid.assets.registry import AssetRegistry
 from climagrid.forecasting.config import ForecastConfig
 from climagrid.forecasting.dataset import (
     build_supervised_frame,
@@ -29,6 +31,49 @@ def test_build_training_panel_aggregates_to_daily(two_asset_csv, mock_run_fn) ->
     assert panel["asset_id"].nunique() == 2
     counts = panel.groupby(["asset_id", "date"]).size()
     assert (counts == 1).all()
+
+
+def test_long_range_is_fetched_in_chunks(two_asset_csv) -> None:
+    # A multi-year range must be split into several smaller fetches (so one huge
+    # request cannot time out), then reassembled into a continuous panel with no
+    # duplicate days at the chunk seams.
+    calls: list[tuple[str, str, str]] = []
+
+    def recording_run(
+        assets, start, end, *, sources=None, features="all"
+    ) -> pd.DataFrame:
+        registry = (
+            assets if isinstance(assets, AssetRegistry) else AssetRegistry(assets)
+        )
+        row = registry.assets.iloc[0]
+        calls.append(
+            (row["asset_id"], start.date().isoformat(), end.date().isoformat())
+        )
+        timestamps = pd.date_range(start, end, freq="h", tz="UTC")
+        return pd.DataFrame(
+            {
+                "asset_id": row["asset_id"],
+                "timestamp": timestamps,
+                "lat": row["lat"],
+                "lon": row["lon"],
+                _TARGET: 1.0,
+            }
+        )
+
+    config = ForecastConfig(targets=[_TARGET])
+    start = datetime(2012, 1, 1, tzinfo=timezone.utc)
+    end = datetime(2020, 12, 31, tzinfo=timezone.utc)  # 9 years -> multiple chunks
+    panel = build_training_panel(
+        two_asset_csv, start, end, config, run_fn=recording_run
+    )
+
+    # More than one fetch per asset (2 assets, so more than 2 calls total).
+    assert len(calls) > 2
+    # No duplicated (asset, day) rows at the chunk seams.
+    assert panel.duplicated(["asset_id", "date"]).sum() == 0
+    # Full, continuous daily coverage of the requested range.
+    assert panel["date"].min() == pd.Timestamp("2012-01-01")
+    assert panel["date"].max() == pd.Timestamp("2020-12-31")
 
 
 def test_aggregate_daily_uses_max(two_asset_csv, mock_run_fn) -> None:

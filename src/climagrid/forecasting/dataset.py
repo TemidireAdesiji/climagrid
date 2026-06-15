@@ -26,7 +26,7 @@ import logging
 import os
 import tempfile
 from collections.abc import Callable, Iterator
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import numpy as np
@@ -39,6 +39,15 @@ from climagrid.pipeline.orchestrator import run as default_run
 logger = logging.getLogger(__name__)
 
 RunFn = Callable[..., pd.DataFrame]
+
+# Long fetches are split into chunks so a single huge request (e.g. 25 years of
+# hourly NASA POWER data) cannot time out or be rejected. Each chunk is fetched
+# with a lookback buffer so trailing-window features (up to 720 h) stay
+# continuous across chunk boundaries; the buffer days are dropped after
+# aggregation. NASA POWER hourly data begins in 2001, the floor for the buffer.
+_FETCH_CHUNK_YEARS = 5
+_FETCH_BUFFER_DAYS = 35
+_HISTORY_FLOOR_YEAR = 2001
 
 
 def predictor_columns(config: ForecastConfig) -> list[str]:
@@ -121,6 +130,25 @@ def _cache_path(
     return Path(config.cache_dir) / f"panel_{digest}.parquet"
 
 
+def _date_chunks(
+    start: datetime, end: datetime, chunk_years: int
+) -> list[tuple[datetime, datetime]]:
+    """Split ``[start, end]`` into consecutive chunks of at most ``chunk_years``."""
+    chunks: list[tuple[datetime, datetime]] = []
+    chunk_start = start
+    while chunk_start <= end:
+        try:
+            boundary = chunk_start.replace(year=chunk_start.year + chunk_years)
+        except ValueError:  # Feb 29 -> fall back to Feb 28 in the target year
+            boundary = chunk_start.replace(
+                year=chunk_start.year + chunk_years, day=28
+            )
+        chunk_end = min(boundary - timedelta(days=1), end)
+        chunks.append((chunk_start, chunk_end))
+        chunk_start = chunk_end + timedelta(days=1)
+    return chunks
+
+
 def build_training_panel(
     assets: AssetRegistry | str | Path,
     history_start: datetime,
@@ -159,19 +187,45 @@ def build_training_panel(
         return pd.read_parquet(cache_path)  # type: ignore[no-any-return]
 
     features = config.required_features()
+    floor = datetime(_HISTORY_FLOOR_YEAR, 1, 1, tzinfo=history_start.tzinfo)
+    buffer = timedelta(days=_FETCH_BUFFER_DAYS)
+    chunks = _date_chunks(history_start, history_end, _FETCH_CHUNK_YEARS)
+
     daily_frames: list[pd.DataFrame] = []
     for sub in _iter_single_asset_registries(registry):
-        raw = resolved_run(
-            sub,
-            history_start,
-            history_end,
-            sources=config.sources,
-            features=features,
-        )
-        if raw is None or raw.empty:
+        asset_chunks: list[pd.DataFrame] = []
+        for chunk_start, chunk_end in chunks:
+            # Fetch a little before the chunk so trailing-window features are
+            # warm at the boundary; the buffer days are dropped below.
+            fetch_start = max(chunk_start - buffer, floor)
+            try:
+                raw = resolved_run(
+                    sub,
+                    fetch_start,
+                    chunk_end,
+                    sources=config.sources,
+                    features=features,
+                )
+            except Exception as exc:
+                logger.warning(
+                    "Fetch failed for chunk %s..%s: %s",
+                    fetch_start.date(),
+                    chunk_end.date(),
+                    exc,
+                )
+                continue
+            if raw is None or raw.empty:
+                continue
+            daily = _aggregate_daily(raw, config)
+            lo = pd.Timestamp(chunk_start.date())
+            hi = pd.Timestamp(chunk_end.date())
+            daily = daily[(daily["date"] >= lo) & (daily["date"] <= hi)]
+            if not daily.empty:
+                asset_chunks.append(daily)
+        if asset_chunks:
+            daily_frames.append(pd.concat(asset_chunks, ignore_index=True))
+        else:
             logger.warning("No data returned for an asset; skipping it in the panel.")
-            continue
-        daily_frames.append(_aggregate_daily(raw, config))
 
     if not daily_frames:
         logger.warning("Training panel is empty: no asset returned any data.")
