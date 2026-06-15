@@ -36,3 +36,22 @@ The [forecasting module](forecasting.md) extends this stance forward in time: it
 - How much history to train on is decided empirically by `history_ablation`, not assumed. The oldest years reflect a slightly different climate (the global surface record has warmed roughly 0.2 C per decade since the early 1980s), but whether that materially affects a given asset's forecast is measured, not asserted.
 
 A forecast of rising environmental stress is a planning aid for inspection timing. It is still not a failure prediction.
+
+### First backtest results (thermal aging)
+
+A first run on 33 real U.S. substations forecast `feat_thermal_aging_factor` (IEEE C57.91) one to seven days ahead, using NASA POWER hourly history aggregated to daily, a LightGBM quantile model, and a three-fold rolling-origin backtest with an embargo gap.
+
+The model beat both baselines at every horizon:
+
+| Horizon (days) | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+|---|---|---|---|---|---|---|---|
+| Skill vs persistence | 0.10 | 0.25 | 0.34 | 0.38 | 0.41 | 0.45 | 0.46 |
+| Skill vs climatology | 0.89 | 0.80 | 0.78 | 0.76 | 0.75 | 0.76 | 0.75 |
+
+Skill is positive throughout and grows with lead time, so the model adds the most value exactly where the lead time is useful. Feature-importance analysis shows the edge over persistence comes from day-of-year seasonality (about 22 percent of importance) and the 30-day trailing context, signals that persistence ignores.
+
+How much history helped was decided empirically. A 10, 15, and 25-year ablation came out essentially tied on skill versus persistence (0.34, 0.33, 0.33), with 10 years marginally best. More history added no measurable value, so about 10 years is the recommended default. This is consistent with the mild non-stationarity noted above, now measured rather than assumed.
+
+The 80 percent (p10 to p90) prediction intervals covered 0.75 to 0.78 of outcomes against the 0.80 target, slightly narrow but close. Conformal calibration to close that gap is planned work.
+
+Caveats: these results are for thermal aging only. The cumulative or rolling features (heat hours, freeze-thaw, soil saturation) are expected to show little skill over persistence and have not yet been evaluated. Errors were largest on hot-climate assets (Texas), where thermal stress is highest and most variable, and smallest on mild Pacific Northwest assets. This remains a forecast of environmental stress for inspection lead time, not a failure prediction.
