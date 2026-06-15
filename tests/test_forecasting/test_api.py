@@ -41,6 +41,28 @@ def test_forecast_lightgbm_end_to_end(two_asset_csv, mock_run_fn) -> None:
     assert (result["p50"] <= result["p90"] + 1e-9).all()
 
 
+def test_forecast_with_calibration(two_asset_csv, mock_run_fn) -> None:
+    pytest.importorskip("lightgbm")
+    # A 2-year range gives enough history to hold out a calibration window.
+    config = ForecastConfig(
+        targets=[_TARGET],
+        horizon_days=2,
+        lags=[1, 2, 7],
+        calibrate_intervals=True,
+        calibration_days=120,
+    )
+    result = forecast(
+        two_asset_csv,
+        config=config,
+        history_start=datetime(2021, 1, 1, tzinfo=timezone.utc),
+        history_end=datetime(2022, 12, 31, tzinfo=timezone.utc),
+        run_fn=mock_run_fn,
+    )
+    assert not result.empty
+    assert (result["p10"] <= result["p50"] + 1e-9).all()
+    assert (result["p50"] <= result["p90"] + 1e-9).all()
+
+
 def test_forecast_persistence_collapses_interval(two_asset_csv, mock_run_fn) -> None:
     config = ForecastConfig(targets=[_TARGET], horizon_days=2, model="persistence")
     start, end = _range()

@@ -57,6 +57,13 @@ class LightGBMForecaster:
         self._predictors = predictor_columns(config)
         self._models: dict[tuple[int, float], Any] = {}
         self._target: str | None = None
+        # Per-horizon conformal calibration of the outer (p_lo, p_hi) interval;
+        # populated by calibrate(), empty otherwise. ``_conformal`` holds the
+        # conformal quantile per horizon; when ``_conformal_normalized`` is True
+        # the widening is scaled per point by (interval width + _conformal_scale).
+        self._conformal: dict[int, float] = {}
+        self._conformal_scale: dict[int, float] = {}
+        self._conformal_normalized: bool = False
 
     def fit(self, frame: pd.DataFrame, target: str) -> LightGBMForecaster:
         """
@@ -94,6 +101,68 @@ class LightGBMForecaster:
                 self._models[(h, q)] = model
         return self
 
+    def calibrate(
+        self,
+        frame: pd.DataFrame,
+        target: str | None = None,
+        *,
+        method: str = "normalized",
+    ) -> LightGBMForecaster:
+        """
+        Conformalize the outer prediction interval (Romano et al. 2019, CQR).
+
+        Uses a held-out calibration ``frame`` (rows NOT seen during fit) to
+        adjust the lowest/highest quantile bounds per horizon so the interval
+        attains its nominal coverage (``q_hi - q_lo``, e.g. 0.80 for p10-p90)
+        out of sample. The calibration set should span a full seasonal cycle,
+        otherwise the adjustment over- or under-corrects on other seasons.
+
+        For each horizon the conformity score is ``E = max(p_lo - y, y - p_hi)``
+        and the stored quantile ``Q`` is its ``ceil((n + 1) * level) / n``
+        empirical quantile. predict() then widens the interval by ``Q``.
+
+        method:
+            ``"normalized"`` (default) scales the score by the model's own
+            interval width ``(p_hi - p_lo) + c`` (``c`` the median calibration
+            width, for stability), so the widening adapts to local uncertainty
+            (wider in volatile seasons, narrower in calm ones) - better
+            conditional coverage. ``"constant"`` applies a single additive ``Q``
+            per horizon (simpler, marginal coverage only).
+        """
+        if not self._models:
+            raise RuntimeError("LightGBMForecaster.calibrate called before fit.")
+        quantiles = self._config.quantiles
+        q_lo, q_hi = quantiles[0], quantiles[-1]
+        level = q_hi - q_lo
+        normalized = method == "normalized"
+        x_all = frame[self._predictors]
+
+        self._conformal = {}
+        self._conformal_scale = {}
+        self._conformal_normalized = normalized
+        for h in range(1, self._config.horizon_days + 1):
+            if (h, q_lo) not in self._models or (h, q_hi) not in self._models:
+                continue
+            y_all = frame[f"y_h{h}"]
+            mask = y_all.notna().to_numpy()
+            if mask.sum() == 0:
+                continue
+            x_h = x_all[mask]
+            y_h = y_all[mask].to_numpy(dtype=float)
+            lo = self._models[(h, q_lo)].predict(x_h)
+            hi = self._models[(h, q_hi)].predict(x_h)
+            scores = np.maximum(lo - y_h, y_h - hi)
+            if normalized:
+                width = hi - lo
+                c = float(np.median(width))
+                self._conformal_scale[h] = c
+                scores = scores / (width + c)
+            n = len(scores)
+            rank = int(np.ceil((n + 1) * level))
+            rank = min(max(rank, 1), n)
+            self._conformal[h] = float(np.sort(scores)[rank - 1])
+        return self
+
     def predict(self, frame: pd.DataFrame, target: str | None = None) -> pd.DataFrame:
         """
         Produce long-form forecasts for every (row, horizon).
@@ -101,7 +170,8 @@ class LightGBMForecaster:
         Returns one row per (asset_id, origin date, horizon) with columns:
         ``asset_id``, ``origin_date``, ``forecast_date``, ``horizon_day``,
         ``target`` and one column per quantile (``p10``, ``p50``, ``p90``),
-        sorted so the quantile columns are non-decreasing.
+        sorted so the quantile columns are non-decreasing. If the model has
+        been conformally calibrated, the outer interval is widened accordingly.
         """
         if not self._models:
             raise RuntimeError("LightGBMForecaster.predict called before fit.")
@@ -119,6 +189,17 @@ class LightGBMForecaster:
             )
             # Enforce non-crossing quantiles: sort each row's predictions.
             preds = np.sort(preds, axis=1)
+            # Conformal widening of the outer interval, if calibrated.
+            if h in self._conformal:
+                q = self._conformal[h]
+                if self._conformal_normalized:
+                    interval = preds[:, -1] - preds[:, 0]
+                    delta = q * (interval + self._conformal_scale[h])
+                else:
+                    delta = q
+                preds[:, 0] -= delta
+                preds[:, -1] += delta
+                preds = np.sort(preds, axis=1)
             block = pd.DataFrame(
                 {
                     "asset_id": frame["asset_id"].to_numpy(),
@@ -162,6 +243,9 @@ class LightGBMForecaster:
                 "predictors": self._predictors,
                 "models": self._models,
                 "target": self._target,
+                "conformal": self._conformal,
+                "conformal_scale": self._conformal_scale,
+                "conformal_normalized": self._conformal_normalized,
             },
             path,
         )
@@ -177,4 +261,7 @@ class LightGBMForecaster:
         forecaster._predictors = state["predictors"]
         forecaster._models = state["models"]
         forecaster._target = state["target"]
+        forecaster._conformal = state.get("conformal", {})
+        forecaster._conformal_scale = state.get("conformal_scale", {})
+        forecaster._conformal_normalized = state.get("conformal_normalized", False)
         return forecaster

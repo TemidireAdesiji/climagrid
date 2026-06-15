@@ -127,6 +127,37 @@ ablation = history_ablation(panel, config, windows_years=[10, 15, 25])
 
 Pick the history length on measured skill and calibration, not assumption.
 
+## Calibrated prediction intervals
+
+The raw quantile intervals tend to be slightly narrow (in one 33-substation run
+the 80 percent interval covered about 0.74 of outcomes against the 0.80 target).
+Setting `calibrate_intervals=True` applies conformalized quantile regression: a
+held-out calibration window is used to widen the interval so its coverage
+matches the nominal level.
+
+```python
+config = ForecastConfig(
+    calibrate_intervals=True,
+    calibration_method="normalized",  # locally adaptive (default); or "constant"
+    calibration_days=365,             # hold out a full year, see note below
+)
+forecast = climagrid.forecast("my_assets.csv", config=config)
+```
+
+In that run this lifted coverage to about 0.78, close to target. Two honest
+caveats:
+
+- The calibration window must span a **full seasonal cycle** (the default 365
+  days). A single-season calibration over- or under-corrects on other seasons.
+- The adjustment is calibrated **on average over the year**. The `"normalized"`
+  method adapts the interval width to local uncertainty and is more seasonally
+  even than `"constant"`, but high-stress summer months (where thermal aging is
+  exponential in temperature) can still be mildly under-covered.
+
+Calibration changes only the interval; the `p50` point forecast and the skill
+scores are unchanged. A calibrated model carries its adjustment through
+`save`/`load`.
+
 ## Where to run it
 
 The module is environment-agnostic. Training data is tiny (under ~100 MB even

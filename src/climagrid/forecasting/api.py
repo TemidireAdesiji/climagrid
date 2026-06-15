@@ -73,6 +73,39 @@ def _baseline_forward(
     return combined[[*_FORECAST_COLUMNS, *q_cols]]  # type: ignore[no-any-return]
 
 
+def _fit_lightgbm(
+    supervised: pd.DataFrame, target: str, config: ForecastConfig
+) -> LightGBMForecaster:
+    """Fit LightGBM, conformally calibrating on a held-out tail if requested.
+
+    When ``config.calibrate_intervals`` is set, the most recent
+    ``calibration_days`` (ideally a full year) are held out as a calibration
+    set: the model fits on the earlier data and the interval is conformalized on
+    the held-out tail. Falls back to a plain fit when there is not enough
+    history to spare a calibration window.
+    """
+    if not config.calibrate_intervals:
+        return LightGBMForecaster(config).fit(supervised, target)
+
+    dates = sorted(supervised["date"].unique())
+    needed = config.calibration_days + config.effective_embargo_days + 30
+    if len(dates) <= needed:
+        logger.warning(
+            "Not enough history to calibrate intervals (need > %d days); "
+            "fitting without calibration.",
+            needed,
+        )
+        return LightGBMForecaster(config).fit(supervised, target)
+
+    calib_start = pd.Timestamp(dates[-config.calibration_days])
+    train_cut = calib_start - pd.Timedelta(days=config.effective_embargo_days)
+    train = supervised[supervised["date"] < train_cut]
+    calib = supervised[supervised["date"] >= calib_start]
+    model = LightGBMForecaster(config).fit(train, target)
+    model.calibrate(calib, target, method=config.calibration_method)
+    return model
+
+
 def forecast(
     assets: AssetRegistry | str | Path,
     *,
@@ -132,7 +165,7 @@ def forecast(
         latest = _latest_origins(supervised)
 
         if config.model == "lightgbm":
-            model = LightGBMForecaster(config).fit(supervised, target)
+            model = _fit_lightgbm(supervised, target, config)
             preds = model.predict(latest, target)
         elif config.model == "persistence":
             fitted = PersistenceForecaster(config).fit(supervised, target)

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -90,3 +91,51 @@ def test_save_before_fit_raises() -> None:
     config = ForecastConfig(targets=[_TARGET])
     with pytest.raises(RuntimeError):
         LightGBMForecaster(config).save("unused.joblib")
+
+
+def _train_calib_split(daily_panel, config):
+    sup = build_supervised_frame(daily_panel, _TARGET, config)
+    dates = sorted(sup["date"].unique())
+    cut = dates[int(len(dates) * 0.7)]
+    return sup, sup[sup["date"] <= cut], sup[sup["date"] > cut]
+
+
+def test_calibrate_before_fit_raises() -> None:
+    config = ForecastConfig(targets=[_TARGET])
+    with pytest.raises(RuntimeError):
+        LightGBMForecaster(config).calibrate(pd.DataFrame(), _TARGET)
+
+
+def test_calibrate_keeps_median_and_monotonic(daily_panel) -> None:
+    config = ForecastConfig(targets=[_TARGET], horizon_days=3, lags=[1, 2, 7])
+    sup, train, calib = _train_calib_split(daily_panel, config)
+    model = LightGBMForecaster(config).fit(train, _TARGET)
+    latest = sup.sort_values("date").groupby("asset_id", as_index=False).tail(1)
+    before = model.predict(latest, _TARGET).sort_values(
+        ["asset_id", "horizon_day"]
+    ).reset_index(drop=True)
+
+    model.calibrate(calib, _TARGET)
+    # A conformal width is set for every horizon.
+    assert set(model._conformal) == set(range(1, config.horizon_days + 1))
+    assert all(np.isfinite(v) for v in model._conformal.values())
+
+    after = model.predict(latest, _TARGET).sort_values(
+        ["asset_id", "horizon_day"]
+    ).reset_index(drop=True)
+    # The median is untouched and quantiles stay non-crossing after widening.
+    np.testing.assert_allclose(before["p50"].to_numpy(), after["p50"].to_numpy())
+    assert (after["p10"] <= after["p50"] + 1e-9).all()
+    assert (after["p50"] <= after["p90"] + 1e-9).all()
+
+
+def test_save_load_preserves_calibration(daily_panel, tmp_path) -> None:
+    config = ForecastConfig(targets=[_TARGET], horizon_days=2, lags=[1, 2, 7])
+    sup, train, calib = _train_calib_split(daily_panel, config)
+    model = LightGBMForecaster(config).fit(train, _TARGET).calibrate(calib, _TARGET)
+    latest = sup.sort_values("date").groupby("asset_id", as_index=False).tail(1)
+    before = model.predict(latest, _TARGET)
+
+    loaded = LightGBMForecaster.load(model.save(tmp_path / "cal.joblib"))
+    assert loaded._conformal == model._conformal
+    pd.testing.assert_frame_equal(before, loaded.predict(latest, _TARGET))

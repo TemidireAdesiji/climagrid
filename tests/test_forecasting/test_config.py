@@ -46,3 +46,15 @@ def test_min_inference_history_days() -> None:
     config = ForecastConfig(lags=[1, 2, 30], rolling_windows=[7, 60])
     # The longest predictor lookback (here the 60-day rolling window).
     assert config.min_inference_history_days == 60
+
+
+def test_calibration_defaults() -> None:
+    config = ForecastConfig()
+    assert config.calibrate_intervals is False
+    assert config.calibration_method == "normalized"
+    assert config.calibration_days == 365
+
+
+def test_invalid_calibration_method_rejected() -> None:
+    with pytest.raises(ValidationError):
+        ForecastConfig(calibration_method="bogus")
