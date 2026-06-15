@@ -25,3 +25,14 @@ A genuine test of "does high stress predict failure" needs **asset-level failure
 ## How to use this honestly
 
 Use climagrid's scores as **interpretable, standards-based prioritization inputs**: which assets are under the most weather stress, and why. To turn them into failure predictions, combine them with your own historical failure records and validate on your own data.
+
+## Forecasting
+
+The [forecasting module](forecasting.md) extends this stance forward in time: it forecasts a stress feature's future value, not a future failure. The same honesty rules apply.
+
+- The target is a daily stress feature (for example heat-aging stress), which is self-supervised: the label is simply the feature's own value on a future day, computed by climagrid. No failure data is used or implied.
+- Every forecast is benchmarked against two naive baselines, persistence (tomorrow equals today) and climatology (the day-of-year average), in a rolling-origin backtest with an embargo gap so a training target window never overlaps a test predictor window. The model is only worth using on horizons and targets where it actually beats those baselines, and the skill-score table reports this honestly, including where it does not.
+- Because stress features are smooth and autocorrelated, persistence is a strong baseline at short lead times; meaningful skill is most likely at medium range.
+- How much history to train on is decided empirically by `history_ablation`, not assumed. The oldest years reflect a slightly different climate (the global surface record has warmed roughly 0.2 C per decade since the early 1980s), but whether that materially affects a given asset's forecast is measured, not asserted.
+
+A forecast of rising environmental stress is a planning aid for inspection timing. It is still not a failure prediction.

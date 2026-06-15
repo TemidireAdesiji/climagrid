@@ -40,6 +40,7 @@ climagrid handles that translation in one place, under an Apache 2.0 license, wi
 getting_started
 data_sources
 schema
+forecasting
 ```
 
 ```{toctree}
