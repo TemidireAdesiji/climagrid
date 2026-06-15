@@ -61,6 +61,22 @@ def test_evaluate_returns_metrics(daily_panel) -> None:
     assert ((result["interval_coverage"] >= 0) & (result["interval_coverage"] <= 1)).all()
 
 
+def test_evaluate_reports_event_conditioned_skill(daily_panel) -> None:
+    pytest.importorskip("lightgbm")
+    config = ForecastConfig(targets=[_TARGET], horizon_days=3, lags=[1, 2, 7])
+    result = evaluate(daily_panel, config, n_splits=2, test_size_days=45)
+
+    assert {"skill_vs_persistence_events", "event_fraction"} <= set(result.columns)
+    # The thermal target is always positive, so every row is an "event":
+    # event fraction is 1 and event skill equals the all-rows skill.
+    assert (result["event_fraction"] == 1.0).all()
+    np.testing.assert_allclose(
+        result["skill_vs_persistence_events"].to_numpy(),
+        result["skill_vs_persistence"].to_numpy(),
+        equal_nan=True,
+    )
+
+
 def test_evaluate_supervised_frame_nonempty(daily_panel) -> None:
     config = ForecastConfig(targets=[_TARGET], horizon_days=2)
     sup = build_supervised_frame(daily_panel, _TARGET, config)

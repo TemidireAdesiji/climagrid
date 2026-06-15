@@ -85,12 +85,20 @@ def evaluate(
     *,
     n_splits: int = 3,
     test_size_days: int = 90,
+    event_threshold: float = 0.0,
 ) -> pd.DataFrame:
     """
     Backtest the LightGBM model against baselines on a daily panel.
 
     Returns one row per (fold, target, horizon) with point-accuracy metrics,
     skill scores versus both baselines, and interval calibration metrics.
+
+    ``skill_vs_persistence_events`` is the skill computed on only the active
+    rows (where the actual value exceeds ``event_threshold``), and
+    ``event_fraction`` is their share. For mostly-zero, sparse targets (e.g.
+    ice loading) the all-rows skill is inflated by the easy zero stretches; the
+    event-conditioned skill reflects how well the model predicts the rare
+    events that matter, and is the honest basis for a deploy decision.
     """
     quantiles = config.quantiles
     q_cols = quantile_column_names(config)
@@ -142,6 +150,16 @@ def evaluate(
                 mse_model = float(np.mean((p50 - y_true) ** 2))
                 mse_pers = float(np.mean((y_pers - y_true) ** 2))
                 mse_clim = float(np.mean((y_clim - y_true) ** 2))
+
+                # Event-conditioned skill: only the active (above-threshold) rows.
+                event = y_true > event_threshold
+                if event.any():
+                    skill_events = _skill(
+                        float(np.mean((p50[event] - y_true[event]) ** 2)),
+                        float(np.mean((y_pers[event] - y_true[event]) ** 2)),
+                    )
+                else:
+                    skill_events = float("nan")
                 coverage = float(np.mean((y_true >= p_low) & (y_true <= p_high)))
                 pinball = float(
                     np.mean(
@@ -163,6 +181,8 @@ def evaluate(
                         "mae_persistence": float(np.mean(np.abs(y_pers - y_true))),
                         "mae_climatology": float(np.mean(np.abs(y_clim - y_true))),
                         "skill_vs_persistence": _skill(mse_model, mse_pers),
+                        "skill_vs_persistence_events": skill_events,
+                        "event_fraction": float(np.mean(event)),
                         "skill_vs_climatology": _skill(mse_model, mse_clim),
                         "interval_coverage": coverage,
                         "pinball": pinball,
