@@ -95,6 +95,28 @@ For the lower-level adapter API (fetching individual data sources, custom featur
 
 ---
 
+## Forecasting
+
+Beyond computing today's stress, climagrid can **forecast each asset's stress up to a week ahead** with calibrated prediction intervals, so a maintenance team gets lead time before a stress peak. It is a probabilistic, standards-based prioritization aid, not a failure prediction (see [Validation Notes](https://github.com/TemidireAdesiji/climagrid/blob/main/docs/validation_notes.md)).
+
+```bash
+pip install "climagrid[ml]"
+```
+
+```python
+import climagrid
+
+forecast = climagrid.forecast(
+    "my_assets.csv",                                       # asset_id, lat, lon
+    config=climagrid.ForecastConfig(calibrate_intervals=True),
+)
+# → per-asset, per-horizon p10 / p50 / p90 stress forecasts
+```
+
+On a first run over 33 real substations, the model beat a persistence baseline at every horizon (1 to 7 days) and the seasonal-average baseline by a wide margin, with every forecast reported honestly against those baselines. See the [forecasting guide](https://github.com/TemidireAdesiji/climagrid/blob/main/docs/forecasting.md) for the methodology and skill numbers.
+
+---
+
 ## Data sources
 
 | Agency | Dataset | Variables | Frequency |
