@@ -1,8 +1,6 @@
 # Forecasting
 
-Medium-range probabilistic forecasting of asset stress features. Requires the
-`[ml]` extra (`pip install "climagrid[ml]"`). See the
-{doc}`forecasting guide </forecasting>` for an overview.
+Medium-range probabilistic forecasting of asset stress features. Requires the `[ml]` extra (`pip install "climagrid[ml]"`). See the {doc}`forecasting guide </forecasting>` for an overview.
 
 ## climagrid.forecast
 

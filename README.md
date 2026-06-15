@@ -5,7 +5,7 @@
 <h1 align="center">climagrid</h1>
 
 <p align="center">
-  <strong>Turn free public weather data into standards-based stress scores for your grid equipment.</strong><br>
+  <strong>Turn free public weather data into standards-based stress scores for your grid equipment, and forecast them days ahead.</strong><br>
   climagrid is an open-source toolkit built on NOAA, NASA, USDA, and USFS data, the kind of weather-risk analysis that used to require expensive software.
 </p>
 
@@ -41,6 +41,8 @@ The U.S. Department of Energy reports that predictive maintenance can cut equipm
 ## What it does
 
 climagrid pulls from five free federal data sources, joins the data to your asset locations, and computes grid stress features ready to drop into any model or spreadsheet. One call in, one DataFrame out.
+
+It can also **forecast** those stress features up to a week ahead, with calibrated prediction intervals and skill scores reported honestly against simple baselines (the optional `[ml]` extra; see [Forecasting](https://github.com/TemidireAdesiji/climagrid/blob/main/docs/forecasting.md)).
 
 ![climagrid pipeline](https://raw.githubusercontent.com/TemidireAdesiji/climagrid/main/docs/assets/pipeline.png)
 
