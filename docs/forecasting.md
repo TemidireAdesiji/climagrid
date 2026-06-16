@@ -162,6 +162,20 @@ Inference does **not** need the full training history. The predictors are autore
 
 The Kaggle training notebook (`examples/kaggle_training.ipynb`) puts this together end to end: it fetches the full history once (cached), trains on 10-year, 15-year and full-record windows, backtests all three on the same recent period to pick the most accurate, and saves every model for download.
 
+## Benchmarking an alternative model (deep learning)
+
+The default forecaster is gradient-boosted trees (`LightGBMForecaster`). `evaluate` takes a `model_factory` argument so any model that implements the same `fit` / `predict` interface can be scored through the exact same rolling-origin splits, quantiles and conformal calibration. An optional LSTM (`LSTMForecaster`, the `[dl]` extra) is provided for an apples-to-apples comparison:
+
+```python
+from climagrid.forecasting import evaluate
+from climagrid.forecasting.torch_models import LSTMForecaster  # needs pip install "climagrid[dl]"
+
+lgbm_scores = evaluate(panel, config)                                   # LightGBM (default)
+lstm_scores = evaluate(panel, config, model_factory=LSTMForecaster)     # LSTM, same harness
+```
+
+Both models read the same supervised frame, so they see identical information; the LSTM encodes the contiguous lag window `[lag_max .. lag_1, y_t]` as a sequence, so train it with contiguous lags (`lags=list(range(1, L + 1))`). On a dataset this small, gradient-boosted trees are a strong baseline that deep nets do not automatically beat, so this is a genuine bake-off rather than an assumed upgrade. The LSTM is run across several seeds because its run-to-run variance can exceed the gap between the two models, and the compute cost of each is reported alongside the skill. The notebook `examples/kaggle_dl_benchmark.ipynb` runs the full comparison and prints which model wins by target and horizon. The intent is to ship the single better model, not both.
+
 ## Command line
 
 ```bash

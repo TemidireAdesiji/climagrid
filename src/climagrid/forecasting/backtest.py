@@ -18,6 +18,7 @@ module provides:
 from __future__ import annotations
 
 import logging
+from typing import Protocol
 
 import numpy as np
 import pandas as pd
@@ -28,6 +29,22 @@ from climagrid.forecasting.dataset import build_supervised_frame
 from climagrid.forecasting.models import LightGBMForecaster, quantile_column_names
 
 logger = logging.getLogger(__name__)
+
+
+class Forecaster(Protocol):
+    """Minimal interface a model needs to be backtested by :func:`evaluate`."""
+
+    def fit(self, frame: pd.DataFrame, target: str) -> Forecaster: ...
+
+    def predict(
+        self, frame: pd.DataFrame, target: str | None = ...
+    ) -> pd.DataFrame: ...
+
+
+class ModelFactory(Protocol):
+    """Builds a fresh forecaster from a config (e.g. ``LightGBMForecaster``)."""
+
+    def __call__(self, config: ForecastConfig) -> Forecaster: ...
 
 
 def rolling_origin_splits(
@@ -86,12 +103,18 @@ def evaluate(
     n_splits: int = 3,
     test_size_days: int = 90,
     event_threshold: float = 0.0,
+    model_factory: ModelFactory = LightGBMForecaster,
 ) -> pd.DataFrame:
     """
-    Backtest the LightGBM model against baselines on a daily panel.
+    Backtest a trained model against baselines on a daily panel.
 
     Returns one row per (fold, target, horizon) with point-accuracy metrics,
     skill scores versus both baselines, and interval calibration metrics.
+
+    ``model_factory`` builds the model under test from the config; it defaults
+    to ``LightGBMForecaster`` (the v1 baseline). Pass ``LSTMForecaster`` to run
+    the deep model through the identical harness for an apples-to-apples
+    comparison.
 
     ``skill_vs_persistence_events`` is the skill computed on only the active
     rows (where the actual value exceeds ``event_threshold``), and
@@ -120,7 +143,7 @@ def evaluate(
             if train.empty or test.empty:
                 continue
 
-            model = LightGBMForecaster(config).fit(train, target)
+            model = model_factory(config).fit(train, target)
             persistence = PersistenceForecaster(config).fit(train, target)
             climatology = ClimatologyForecaster(config).fit(train, target)
             model_pred = model.predict(test, target)
@@ -199,6 +222,7 @@ def history_ablation(
     windows_years: list[int] | None = None,
     n_splits: int = 3,
     test_size_days: int = 90,
+    model_factory: ModelFactory = LightGBMForecaster,
 ) -> pd.DataFrame:
     """
     Rerun ``evaluate`` across several history-window lengths.
@@ -217,7 +241,11 @@ def history_ablation(
         cutoff = max_date - pd.DateOffset(years=window)
         subset = panel[panel["date"] >= cutoff]
         result = evaluate(
-            subset, config, n_splits=n_splits, test_size_days=test_size_days
+            subset,
+            config,
+            n_splits=n_splits,
+            test_size_days=test_size_days,
+            model_factory=model_factory,
         )
         if not result.empty:
             result = result.assign(history_years=window)

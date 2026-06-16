@@ -29,8 +29,61 @@ TARGET_TO_FEATURE: dict[str, str] = {
 }
 
 DailyAgg = Literal["max", "mean", "min"]
-ModelName = Literal["lightgbm", "persistence", "climatology"]
+ModelName = Literal["lightgbm", "lstm", "persistence", "climatology"]
 CalibrationMethod = Literal["normalized", "constant", "mondrian"]
+
+
+class LSTMParams(BaseModel):
+    """
+    Hyperparameters for the optional LSTM forecaster (the ``[dl]`` extra).
+
+    These are read only by ``LSTMForecaster`` and ignored by the LightGBM
+    model, so a single ``ForecastConfig`` can drive both for an apples-to-apples
+    benchmark. The LSTM consumes the same supervised frame as LightGBM: its
+    encoder sequence is the contiguous lag window ``[lag_max .. lag_1, y_t]``,
+    so both models see exactly the same predictor information. For a clean
+    sequence, train with contiguous lags (e.g. ``lags=list(range(1, 29))``).
+
+    Parameters
+    ----------
+    hidden_size:
+        Width of the LSTM hidden state.
+    num_layers:
+        Number of stacked LSTM layers.
+    dropout:
+        Dropout applied between LSTM layers and before the output head.
+    epochs:
+        Maximum training epochs (early stopping may end training sooner).
+    batch_size:
+        Minibatch size.
+    learning_rate:
+        Adam learning rate.
+    weight_decay:
+        Adam L2 regularization.
+    patience:
+        Early-stopping patience in epochs on the validation pinball loss.
+    val_fraction:
+        Fraction of the most recent training origins held out for early
+        stopping (kept chronological, never shuffled, to avoid leakage).
+    seed:
+        Base random seed. Multi-seed runs vary this to report mean and spread.
+    device:
+        ``"auto"`` uses CUDA when available, else CPU. Override for tests.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    hidden_size: int = Field(default=64, ge=1)
+    num_layers: int = Field(default=1, ge=1, le=4)
+    dropout: float = Field(default=0.1, ge=0.0, lt=1.0)
+    epochs: int = Field(default=60, ge=1)
+    batch_size: int = Field(default=256, ge=1)
+    learning_rate: float = Field(default=1e-3, gt=0.0)
+    weight_decay: float = Field(default=1e-5, ge=0.0)
+    patience: int = Field(default=8, ge=1)
+    val_fraction: float = Field(default=0.2, gt=0.0, lt=1.0)
+    seed: int = Field(default=42)
+    device: Literal["auto", "cpu", "cuda"] = "auto"
 
 
 class ForecastConfig(BaseModel):
@@ -121,6 +174,8 @@ class ForecastConfig(BaseModel):
     random_state: int = 42
 
     cache_dir: Path | None = None
+
+    lstm: LSTMParams = Field(default_factory=LSTMParams)
 
     @field_validator("targets")
     @classmethod

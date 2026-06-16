@@ -26,6 +26,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from climagrid.forecasting import conformal as conformal_mod
 from climagrid.forecasting.config import ForecastConfig
 from climagrid.forecasting.dataset import predictor_columns
 
@@ -101,14 +102,6 @@ class LightGBMForecaster:
                 self._models[(h, q)] = model
         return self
 
-    _MIN_SEASON_BIN = 50  # min calibration points to trust a per-season width
-
-    @staticmethod
-    def _season_index(dates: Any) -> np.ndarray:
-        """Meteorological season per date: 0=DJF, 1=MAM, 2=JJA, 3=SON."""
-        months = pd.DatetimeIndex(pd.to_datetime(dates)).month.to_numpy()
-        return ((months % 12) // 3).astype(int)
-
     def calibrate(
         self,
         frame: pd.DataFrame,
@@ -138,22 +131,12 @@ class LightGBMForecaster:
         """
         if not self._models:
             raise RuntimeError("LightGBMForecaster.calibrate called before fit.")
-        if method not in {"constant", "normalized", "mondrian"}:
-            raise ValueError(f"Unknown calibration method: {method!r}")
         quantiles = self._config.quantiles
         q_lo, q_hi = quantiles[0], quantiles[-1]
         level = q_hi - q_lo
         x_all = frame[self._predictors]
 
-        self._conformal = {}
-        self._conformal_scale = {}
-        self._conformal_method = method
-
-        def _emp_quantile(scores: np.ndarray) -> float:
-            n = len(scores)
-            rank = min(max(int(np.ceil((n + 1) * level)), 1), n)
-            return float(np.sort(scores)[rank - 1])
-
+        per_horizon: dict[int, conformal_mod.HorizonCalib] = {}
         for h in range(1, self._config.horizon_days + 1):
             if (h, q_lo) not in self._models or (h, q_hi) not in self._models:
                 continue
@@ -165,29 +148,15 @@ class LightGBMForecaster:
             y_h = y_all[mask].to_numpy(dtype=float)
             lo = self._models[(h, q_lo)].predict(x_h)
             hi = self._models[(h, q_hi)].predict(x_h)
-            raw = np.maximum(lo - y_h, y_h - hi)
+            forecast_dates = pd.to_datetime(frame.loc[mask, "date"]) + pd.to_timedelta(
+                h, unit="D"
+            )
+            per_horizon[h] = (lo, hi, y_h, forecast_dates)
 
-            if method == "normalized":
-                width = hi - lo
-                c = float(np.median(width))
-                self._conformal_scale[(h, 0)] = c
-                self._conformal[(h, 0)] = _emp_quantile(raw / (width + c))
-            elif method == "constant":
-                self._conformal[(h, 0)] = _emp_quantile(raw)
-            else:  # mondrian: additive Q per season of the forecast (target) date
-                target_dates = pd.to_datetime(frame.loc[mask, "date"]) + pd.to_timedelta(
-                    h, unit="D"
-                )
-                seasons = self._season_index(target_dates)
-                pooled = _emp_quantile(raw)
-                self._conformal[(h, -1)] = pooled  # fallback for sparse seasons
-                for season in np.unique(seasons):
-                    in_season = raw[seasons == season]
-                    self._conformal[(h, int(season))] = (
-                        _emp_quantile(in_season)
-                        if len(in_season) >= self._MIN_SEASON_BIN
-                        else pooled
-                    )
+        self._conformal, self._conformal_scale = conformal_mod.fit_conformal(
+            method, level, per_horizon
+        )
+        self._conformal_method = method
         return self
 
     def predict(self, frame: pd.DataFrame, target: str | None = None) -> pd.DataFrame:
@@ -218,7 +187,17 @@ class LightGBMForecaster:
             preds = np.sort(preds, axis=1)
             # Conformal widening of the outer interval, if calibrated.
             if self._conformal_method:
-                delta = self._conformal_delta(h, preds, frame)
+                forecast_dates = pd.to_datetime(frame["date"]) + pd.to_timedelta(
+                    h, unit="D"
+                )
+                delta = conformal_mod.conformal_delta(
+                    self._conformal_method,
+                    self._conformal,
+                    self._conformal_scale,
+                    h,
+                    preds,
+                    forecast_dates,
+                )
                 preds[:, 0] -= delta
                 preds[:, -1] += delta
                 preds = np.sort(preds, axis=1)
@@ -247,30 +226,6 @@ class LightGBMForecaster:
             *q_cols,
         ]
         return pd.concat(records, ignore_index=True)[ordered_cols]  # type: ignore[no-any-return]
-
-    def _conformal_delta(
-        self, h: int, preds: np.ndarray, frame: pd.DataFrame
-    ) -> float | np.ndarray:
-        """Per-row interval widening for horizon ``h`` under the active method."""
-        method = self._conformal_method
-        if method == "normalized":
-            q = self._conformal.get((h, 0))
-            if q is None:
-                return 0.0
-            interval = preds[:, -1] - preds[:, 0]
-            return q * (interval + self._conformal_scale.get((h, 0), 0.0))  # type: ignore[no-any-return]
-        if method == "mondrian":
-            forecast_dates = pd.to_datetime(frame["date"]) + pd.to_timedelta(
-                h, unit="D"
-            )
-            seasons = self._season_index(forecast_dates)
-            fallback = self._conformal.get((h, -1), 0.0)
-            return np.array(
-                [self._conformal.get((h, int(s)), fallback) for s in seasons],
-                dtype=float,
-            )
-        # constant
-        return self._conformal.get((h, 0), 0.0)
 
     def save(self, path: str | Path) -> Path:
         """Persist the fitted forecaster (config, predictors, per-quantile models).

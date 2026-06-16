@@ -59,8 +59,12 @@ ml = [
     "scikit-learn>=1.3",
     "pyarrow>=14.0",
 ]
+dl = [
+    "climagrid[ml]",
+    "torch>=2.2",
+]
 full = [
-    "climagrid[noaa-nwp,nasa,met,report,ml]",
+    "climagrid[noaa-nwp,nasa,met,report,ml,dl]",
 ]
 dev = [
     "pytest>=7.4",
