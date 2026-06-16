@@ -40,7 +40,7 @@ The U.S. Department of Energy reports that predictive maintenance can cut equipm
 
 ## What it does
 
-climagrid pulls from five free federal data sources, joins the data to your asset locations, and computes grid stress features ready to drop into any model or spreadsheet. One call in, one DataFrame out.
+climagrid pulls from five open-source federal data sources, joins the data to your asset locations, and computes grid stress features ready to drop into any model or spreadsheet. One call in, one DataFrame out.
 
 It can also **forecast** those stress features up to a week ahead, with calibrated prediction intervals and skill scores reported honestly against simple baselines (the optional `[ml]` extra; see [Forecasting](https://github.com/TemidireAdesiji/climagrid/blob/main/docs/forecasting.md)).
 
