@@ -54,8 +54,13 @@ report = [
     "weasyprint>=60",
     "matplotlib>=3.7",
 ]
+ml = [
+    "lightgbm>=4.0",
+    "scikit-learn>=1.3",
+    "pyarrow>=14.0",
+]
 full = [
-    "climagrid[noaa-nwp,nasa,met,report]",
+    "climagrid[noaa-nwp,nasa,met,report,ml]",
 ]
 dev = [
     "pytest>=7.4",
@@ -79,6 +84,9 @@ dev = [
     # weasyprint needs system libraries (pango/cairo) and stays in [report] only,
     # to keep `pip install -e ".[dev]"` working on bare CI runners.
     "matplotlib>=3.7",
+    # lightgbm so the forecasting model tests run in CI. It ships as a self
+    # contained manylinux wheel, so it stays installable on bare CI runners.
+    "lightgbm>=4.0",
 ]
 docs = [
     "sphinx>=7.0",

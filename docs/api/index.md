@@ -9,4 +9,5 @@ features
 assets
 outputs
 schema
+forecast
 ```

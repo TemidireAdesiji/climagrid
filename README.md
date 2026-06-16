@@ -5,7 +5,7 @@
 <h1 align="center">climagrid</h1>
 
 <p align="center">
-  <strong>Turn free public weather data into standards-based stress scores for your grid equipment.</strong><br>
+  <strong>Turn free public weather data into standards-based stress scores for your grid equipment, and forecast them days ahead.</strong><br>
   climagrid is an open-source toolkit built on NOAA, NASA, USDA, and USFS data, the kind of weather-risk analysis that used to require expensive software.
 </p>
 
@@ -41,6 +41,8 @@ The U.S. Department of Energy reports that predictive maintenance can cut equipm
 ## What it does
 
 climagrid pulls from five open-source federal data sources, joins the data to your asset locations, and computes grid stress features ready to drop into any model or spreadsheet. One call in, one DataFrame out.
+
+It can also **forecast** those stress features up to a week ahead, with calibrated prediction intervals and skill scores reported honestly against simple baselines (the optional `[ml]` extra; see [Forecasting](https://github.com/TemidireAdesiji/climagrid/blob/main/docs/forecasting.md)).
 
 ![climagrid pipeline](https://raw.githubusercontent.com/TemidireAdesiji/climagrid/main/docs/assets/pipeline.png)
 
@@ -92,6 +94,29 @@ Each asset is ranked by the single weather hazard it is most exposed to, with th
 ![Asset thermal stress map, 33 real substations across 7 U.S. states](https://raw.githubusercontent.com/TemidireAdesiji/climagrid/main/docs/assets/quickstart_map.png)
 
 For the lower-level adapter API (fetching individual data sources, custom feature computation) see the [documentation](https://climagrid.readthedocs.io).
+
+---
+
+## Forecasting
+
+Beyond computing today's stress, climagrid can **forecast each asset's stress up to a week ahead** with calibrated prediction intervals, so a maintenance team gets lead time before a stress peak. It is a probabilistic, standards-based prioritization aid, not a failure prediction (see [Validation Notes](https://github.com/TemidireAdesiji/climagrid/blob/main/docs/validation_notes.md)).
+
+```bash
+pip install "climagrid[ml]"
+```
+
+```python
+import climagrid
+
+# Train models once (see the forecasting guide / training notebook), then serve:
+forecast = climagrid.forecast(
+    "my_assets.csv",   # asset_id, lat, lon
+    "models/",         # saved models: a dir with manifest.json, or a single .joblib
+)
+# → per-asset, per-horizon p10 / p50 / p90 stress forecasts
+```
+
+On a first run over 33 real substations, the model beat a persistence baseline at every horizon (1 to 7 days) and the seasonal-average baseline by a wide margin, with every forecast reported honestly against those baselines. See the [forecasting guide](https://github.com/TemidireAdesiji/climagrid/blob/main/docs/forecasting.md) for the methodology and skill numbers.
 
 ---
 

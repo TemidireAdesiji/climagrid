@@ -109,6 +109,18 @@ to_parquet(df, "output/features.parquet")  # recommended for >30 days
 
 ---
 
+## Forecasting
+
+To forecast each asset's stress features days ahead, with calibrated prediction intervals, see the [forecasting guide](forecasting.md). It needs the `[ml]` extra (`pip install "climagrid[ml]"`). Train models once, then serve them (`forecast` loads saved models, it does not train):
+
+```python
+import climagrid
+
+forecast = climagrid.forecast("assets.csv", "models/")  # per-asset p10/p50/p90
+```
+
+---
+
 ## Using individual adapters
 
 For more control, use adapters directly:

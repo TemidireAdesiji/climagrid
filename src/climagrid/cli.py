@@ -246,6 +246,79 @@ def report(
 
 @main.command()
 @click.option(
+    "--assets", "-a",
+    required=True,
+    type=click.Path(exists=True, path_type=Path),
+    help="Asset CSV or GeoJSON file (must have asset_id, lat, lon columns).",
+)
+@click.option(
+    "--model-dir", "-m",
+    required=True,
+    type=click.Path(exists=True, path_type=Path),
+    help="Directory with manifest.json and saved models, or a single .joblib. "
+         "Train these with the forecasting training notebook.",
+)
+@click.option(
+    "--history-end", default=None, metavar="YYYY-MM-DD",
+    help="End of the recent window to fetch (UTC). Default: today.",
+)
+@click.option(
+    "--output", "-o",
+    default="climagrid_forecast.parquet",
+    show_default=True,
+    type=click.Path(path_type=Path),
+    help="Output file path (.parquet or .csv).",
+)
+def forecast(
+    assets: Path,
+    model_dir: Path,
+    history_end: str | None,
+    output: Path,
+) -> None:
+    """Forecast asset stress from saved models (load-and-serve; never trains)."""
+    import climagrid
+
+    try:
+        end_dt = (
+            datetime.fromisoformat(history_end).replace(tzinfo=timezone.utc)
+            if history_end
+            else datetime.now(timezone.utc)
+        )
+    except ValueError as exc:
+        raise click.BadParameter(str(exc), param_hint="--history-end") from exc
+
+    click.echo(f"Assets:  {assets}")
+    click.echo(f"Models:  {model_dir}")
+    click.echo(f"As of:   {end_dt.date()}")
+
+    try:
+        result = climagrid.forecast(assets, model_dir, history_end=end_dt)
+    except ImportError as exc:
+        click.secho(f"Error: {exc}", fg="red", err=True)
+        sys.exit(1)
+    except Exception as exc:
+        click.secho(f"Error: {exc}", fg="red", err=True)
+        sys.exit(1)
+
+    if result.empty:
+        click.secho(
+            "Warning: empty forecast: check the models and recent data availability.",
+            fg="yellow",
+        )
+
+    suffix = output.suffix.lower()
+    if suffix == ".csv":
+        result.to_csv(output, index=False)
+        fmt = "CSV"
+    else:
+        result.to_parquet(output, index=False)
+        fmt = "Parquet"
+
+    click.secho(f"✓ {len(result):,} rows → {output} ({fmt})", fg="green")
+
+
+@main.command()
+@click.option(
     "--output", "-o",
     default=None,
     type=click.Path(path_type=Path),

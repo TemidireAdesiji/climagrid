@@ -57,6 +57,12 @@ MCC.csv
 _assets_*.csv
 _c_*.csv
 
+# Downloaded Kaggle training-run artifacts (analyzed locally, not committed)
+data/*.joblib
+data/*.csv
+data/manifest.json
+!data/README.md
+
 # Generated report deliverables (local, not part of the package)
 report.html
 report_plain.html

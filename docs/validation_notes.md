@@ -25,3 +25,33 @@ A genuine test of "does high stress predict failure" needs **asset-level failure
 ## How to use this honestly
 
 Use climagrid's scores as **interpretable, standards-based prioritization inputs**: which assets are under the most weather stress, and why. To turn them into failure predictions, combine them with your own historical failure records and validate on your own data.
+
+## Forecasting
+
+The [forecasting module](forecasting.md) extends this stance forward in time: it forecasts a stress feature's future value, not a future failure. The same honesty rules apply.
+
+- The target is a daily stress feature (for example heat-aging stress), which is self-supervised: the label is simply the feature's own value on a future day, computed by climagrid. No failure data is used or implied.
+- Every forecast is benchmarked against two naive baselines, persistence (tomorrow equals today) and climatology (the day-of-year average), in a rolling-origin backtest with an embargo gap so a training target window never overlaps a test predictor window. The model is only worth using on horizons and targets where it actually beats those baselines, and the skill-score table reports this honestly, including where it does not.
+- Because stress features are smooth and autocorrelated, persistence is a strong baseline at short lead times; meaningful skill is most likely at medium range.
+- How much history to train on is decided empirically by `history_ablation`, not assumed. The oldest years reflect a slightly different climate (the global surface record has warmed roughly 0.2 C per decade since the early 1980s), but whether that materially affects a given asset's forecast is measured, not asserted.
+
+A forecast of rising environmental stress is a planning aid for inspection timing. It is still not a failure prediction.
+
+### First backtest results (thermal aging)
+
+A first run on 33 real U.S. substations forecast `feat_thermal_aging_factor` (IEEE C57.91) one to seven days ahead, using NASA POWER hourly history aggregated to daily, a LightGBM quantile model, and a three-fold rolling-origin backtest with an embargo gap.
+
+The model beat both baselines at every horizon:
+
+| Horizon (days) | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+|---|---|---|---|---|---|---|---|
+| Skill vs persistence | 0.10 | 0.25 | 0.34 | 0.38 | 0.41 | 0.45 | 0.46 |
+| Skill vs climatology | 0.89 | 0.80 | 0.78 | 0.76 | 0.75 | 0.76 | 0.75 |
+
+Skill is positive throughout and grows with lead time, so the model adds the most value exactly where the lead time is useful. Feature-importance analysis shows the edge over persistence comes from day-of-year seasonality (about 22 percent of importance) and the 30-day trailing context, signals that persistence ignores.
+
+How much history helped was decided empirically. A 10, 15, and 25-year ablation came out essentially tied on skill versus persistence (0.34, 0.33, 0.33), with 10 years marginally best. More history added no measurable value, so about 10 years is the recommended default. This is consistent with the mild non-stationarity noted above, now measured rather than assumed.
+
+The raw 80 percent (p10 to p90) prediction intervals covered 0.75 to 0.78 of outcomes against the 0.80 target. Conformal calibration (`calibrate_intervals=True`, the season-conditional Mondrian method by default) closes most of this: it brings overall coverage to about 0.78 and the high-stress summer interval to target. The test year's winter stayed near 0.73 because that winter was more variable than prior years, year-over-year drift that conformal calibration cannot remove.
+
+Caveats: these results are for thermal aging only. The cumulative or rolling features (heat hours, freeze-thaw, soil saturation) are expected to show little skill over persistence and have not yet been evaluated. Errors were largest on hot-climate assets (Texas), where thermal stress is highest and most variable, and smallest on mild Pacific Northwest assets. This remains a forecast of environmental stress for inspection lead time, not a failure prediction.
