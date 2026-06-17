@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "climagrid"
-version = "0.2.1"
+version = "0.3.0"
 description = "Climate data, grid-ready: standards-based environmental stress features for grid equipment, from free NOAA, NASA, USDA, and USFS data"
 readme = "README.md"
 license = { text = "Apache-2.0" }
