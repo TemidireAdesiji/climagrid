@@ -7,13 +7,15 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [Unreleased]
+## [0.3.0] - 2026-06-17
 
 ### Added
 - `climagrid.forecast()` and the `climagrid forecast` CLI command: medium-range probabilistic forecasting of daily asset stress features with prediction intervals, benchmarked against persistence and climatology baselines in a rolling-origin backtest (`climagrid.forecasting`, new `[ml]` optional extra). Forecasts environmental stress, not equipment failure.
 - Conformal calibration of the prediction intervals (`ForecastConfig(calibrate_intervals=True)`), with season-conditional `"mondrian"` (default), `"normalized"`, and `"constant"` methods
 - `LightGBMForecaster.save()` / `.load()` for train-once, reuse-anywhere inference; `evaluate()` and `history_ablation()` for honest skill scoring
 - `examples/forecasting.ipynb` (showcase), `examples/kaggle_training.ipynb` (train and compare history windows, save models), and `examples/analyze_kaggle_run.ipynb`
+
+[0.3.0]: https://github.com/TemidireAdesiji/climagrid/releases/tag/v0.3.0
 
 ## [0.2.1] - 2026-06-08
 

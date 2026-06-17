@@ -11,8 +11,8 @@ authors:
 repository-code: "https://github.com/TemidireAdesiji/climagrid"
 url: "https://climagrid.readthedocs.io"
 license: Apache-2.0
-version: "0.2.1"
-date-released: "2026-06-08"
+version: "0.3.0"
+date-released: "2026-06-17"
 doi: "10.5281/zenodo.20256535"
 keywords:
   - NOAA

@@ -179,7 +179,7 @@ If you use climagrid in research, regulatory filings, or utility planning, pleas
 
 ```
 Adesiji, T. (2026). climagrid: Open-source environmental stress feature toolkit
-to support electric utility predictive maintenance (v0.2.1). Apache 2.0.
+to support electric utility predictive maintenance (v0.3.0). Apache 2.0.
 https://doi.org/10.5281/zenodo.20256535
 ```
 
