@@ -32,7 +32,7 @@ jobs:
           ref: main        # always update main, not the tag
           token: ${{ secrets.MEDIA_PAT }}
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -91,7 +91,7 @@ jobs:
           ref: main
           token: ${{ secrets.MEDIA_PAT }}
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
